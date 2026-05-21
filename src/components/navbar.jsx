@@ -1,97 +1,167 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import React, { useState, useEffect } from "react";
-import { ShoppingCart, Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X, ShoppingBag, User } from "lucide-react";
+import CartDrawer from "./CartDrawer";
 
 const Navbar = () => {
-  const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
 
-  const navItems = ["Home", "About", "Collections"];
+  const navItems = [
+    { name: "Home", path: "/" },
+    { name: "Collections", path: "/collections" },
+    { name: "About", path: "/about" },
+    { name: "Contact", path: "/contact" },
+  ];
 
+  // Load cart from localStorage
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+    setCartItems(storedCart);
+  }, []);
+
+  // Optional: keep sync if cart updates in same tab
+  useEffect(() => {
+    const handleStorage = () => {
+      const updatedCart = JSON.parse(localStorage.getItem("cart")) || [];
+      setCartItems(updatedCart);
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   return (
-    <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 
-  ${
-    scrolled
-      ? "bg-white/25 backdrop-blur-2xl border-b border-white/40 shadow-md py-0"
-      : "bg-white/15 backdrop-blur-xl border-b border-gray-800/50 py-4"
-  }`}
-    >
-      <div className="max-w-7xl mx-auto px-6 py-4 relative flex items-center justify-between">
-        {/* LEFT (Desktop Links) */}
-        <div className="hidden md:flex gap-8 text-[12px] tracking-[0.2em] uppercase text-gray-900/90 z-10">
-          {navItems.map((item) => (
-            <Link
-              key={item}
-              to={item}
-              className="relative group hover:text-[#A68A3C] transition"
-            >
-              {item}
-              <span className="absolute left-0 -bottom-1 w-0 h-[1px] bg-[#A68A3C] transition-all duration-300 group-hover:w-full"></span>
-            </Link>
-          ))}
-        </div>
-
-        {/* MOBILE MENU BUTTON */}
-        <div className="md:hidden z-10">
-          <button onClick={() => setOpen(!open)}>
-            {open ? <X /> : <Menu />}
-          </button>
-        </div>
-
-        {/* CENTER LOGO */}
-        <div className="text-center z-10 md:absolute md:left-1/2 md:-translate-x-1/2">
-          <h1 className="font-luxury text-xl md:text-2xl tracking-wide text-gray-900">
-            Hamdam
-          </h1>
-          <p className="text-[10px] md:text-xs italic text-[#A68A3C] tracking-[0.3em]">
-            Jewellers
-          </p>
-        </div>
-
-        {/* RIGHT */}
-        <div className="flex items-center gap-4 md:gap-6 z-10">
-          <button className="hidden md:block text-[12px] tracking-[0.2em] uppercase border-b border-transparent hover:border-[#A68A3C] hover:text-[#A68A3C] transition">
-            Sign Up
-          </button>
-
-          {/* Cart */}
-          <div className="relative cursor-pointer group">
-            <ShoppingCart className="w-5 h-5 text-gray-900/90 group-hover:text-[#A68A3C] transition" />
-
-            <span className="absolute -top-2 -right-2 bg-[#A68A3C]/90 backdrop-blur-md text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-md">
-              0
+    <>
+      {/* NAVBAR */}
+      <header className="fixed top-0 left-0 w-full z-50 bg-background border-b border-black/5">
+        <div className="max-w-7xl mx-auto px-5 md:px-8 h-20 flex items-center justify-between">
+          {/* LOGO */}
+          <Link
+            to="/"
+            className="font-luxury text-xl md:text-2xl tracking-widest text-primary flex flex-col"
+          >
+            HAMDAM
+            <span className="text-xs tracking-[0.25em] text-center text-black/70">
+              JEWELLERY
             </span>
+          </Link>
+
+          {/* DESKTOP MENU */}
+          <nav className="hidden md:flex items-center gap-10">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.path}
+                className="text-xs uppercase tracking-[0.25em] text-black/70 hover:text-black transition"
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+
+          {/* RIGHT ACTIONS */}
+          <div className="flex items-center gap-4">
+            {/* LOGIN ICON (DESKTOP) */}
+            <Link
+              to="/auth"
+              className="hidden md:flex items-center justify-center relative group"
+            >
+              <User className="w-5 h-5 text-black" />
+              <span className="absolute -bottom-5 text-[10px] opacity-0 group-hover:opacity-100 transition">
+                Login
+              </span>
+            </Link>
+
+            {/* CART */}
+            <button
+              onClick={() => setCartOpen(true)}
+              className="relative group"
+            >
+              <ShoppingBag className="w-5 h-5 text-black" />
+
+              {cartItems.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full">
+                  {cartItems.length}
+                </span>
+              )}
+            </button>
+
+            {/* MOBILE MENU BUTTON */}
+            <button className="md:hidden" onClick={() => setMobileOpen(true)}>
+              <Menu />
+            </button>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* MOBILE MENU */}
-      {open && (
-        <div className="md:hidden bg-white/80 backdrop-blur-xl border-t border-white/20 px-6 py-6 space-y-6 text-center">
-          {navItems.map((item) => (
-            <Link
-              key={item}
-              to={item}
-              onClick={() => setOpen(false)}
-              className="block text-sm uppercase tracking-widest text-gray-900 hover:text-[#A68A3C] transition"
-            >
-              {item}
-            </Link>
-          ))}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            {/* overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 bg-black/40 z-40"
+            />
 
-          <button className="text-sm uppercase tracking-widest border-b border-[#A68A3C]">
-            Sign Up
-          </button>
-        </div>
-      )}
-    </nav>
+            {/* drawer */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "tween", duration: 0.35 }}
+              className="fixed top-0 left-0 w-[80%] sm:w-[320px] h-full bg-[#f8f5f0] z-50 p-6 flex flex-col"
+            >
+              {/* close */}
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="self-end mb-10"
+              >
+                <X />
+              </button>
+
+              {/* links */}
+              <div className="flex flex-col gap-6">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    onClick={() => setMobileOpen(false)}
+                    className="text-xs uppercase tracking-[0.25em] text-black/80"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+
+                {/* MOBILE LOGIN */}
+                <Link
+                  to="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-black/80 mt-6"
+                >
+                  <User className="w-4 h-4" />
+                  Login
+                </Link>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* CART DRAWER */}
+      <CartDrawer
+        open={cartOpen}
+        setOpen={setCartOpen}
+        cartItems={cartItems}
+        setCartItems={setCartItems}
+      />
+    </>
   );
 };
 

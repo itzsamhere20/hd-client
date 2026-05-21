@@ -149,7 +149,7 @@ const Products = () => {
               onChange={(e) => setSearch(e.target.value)}
               className="
                 w-full h-[58px]
-                rounded-full
+                
                 border border-[#ddd2c2]
                 bg-[#f8f5f0]
                 pl-14 pr-14
@@ -166,8 +166,8 @@ const Products = () => {
                 onClick={() => setSearch("")}
                 className="
                   absolute right-4 top-1/2 -translate-y-1/2
-                  w-8 h-8 rounded-full
-                  hover:bg-black hover:text-white
+                  w-8 h-8 
+                  hover:bg-primary hover:text-white
                   transition
                   flex items-center justify-center
                 "
@@ -186,7 +186,7 @@ const Products = () => {
                   onClick={() => setActiveCategory(item)}
                   className={`
                     px-5 h-[42px]
-                    rounded-full
+                   
                     text-sm tracking-[0.15em]
                     whitespace-nowrap
                     border transition-all duration-300
@@ -214,7 +214,7 @@ const Products = () => {
                 className="
                   h-[44px]
                   px-4
-                  rounded-full
+                  
                   border border-[#ddd2c2]
                   bg-white
                   outline-none
@@ -240,7 +240,7 @@ const Products = () => {
               className="
                 bg-primary text-white
                 px-6 py-3
-                rounded-full
+               
                 text-xs tracking-[0.25em]
                 uppercase
               "
@@ -287,7 +287,7 @@ const Products = () => {
             className="
       absolute
       w-[280px] h-[280px]
-      rounded-full
+     
       bg-[#d6c3a5]/30
       blur-3xl
     "
@@ -304,7 +304,7 @@ const Products = () => {
             className="
       relative z-10
       w-3 h-3
-      rounded-full
+     
       bg-[#c89b63]
       mb-8
     "
@@ -411,13 +411,13 @@ const Products = () => {
                         )}
 
                         {soldOut && (
-                          <div className="absolute top-4 left-4 z-40 bg-black text-white text-[8px] md:text-[10px] tracking-[0.2em] px-3 py-2 rounded-full uppercase">
+                          <div className="absolute top-4 left-4 z-40 bg-black text-white text-[8px] md:text-[10px] tracking-[0.2em] px-3 py-2 uppercase">
                             Sold Out
                           </div>
                         )}
 
                         {limitedStock && !soldOut && (
-                          <div className="absolute top-4 left-4 z-20 bg-[#c89b63] text-white text-[8px] md:text-[10px] tracking-[0.2em] px-3 py-2 rounded-full uppercase">
+                          <div className="absolute top-4 left-4 z-20 bg-[#c89b63] text-white text-[8px] md:text-[10px] tracking-[0.2em] px-3 py-2 uppercase">
                             Limited Stock
                           </div>
                         )}
@@ -506,7 +506,7 @@ const Products = () => {
                     key={item}
                     onClick={() => setActiveCategory(item)}
                     className={`
-                      px-4 py-2 rounded-full text-xs border
+                      px-4 py-2 text-xs border
                       ${
                         activeCategory === item
                           ? "bg-primary text-white border-primary"
@@ -528,9 +528,9 @@ const Products = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full h-[44px] border border-[#ddd2c2] rounded-full px-4 text-sm"
+                className="w-full h-[44px] border border-[#ddd2c2] px-4 text-sm"
               >
-                <option value="default">Sort</option>
+                <option value="default">Default</option>
                 <option value="men">Men</option>
                 <option value="women">Women</option>
                 <option value="artificial">Artificial</option>
@@ -542,7 +542,7 @@ const Products = () => {
 
             <button
               onClick={() => setFilterOpen(false)}
-              className="w-full mt-6 bg-primary text-white py-3 rounded-full text-xs tracking-[0.2em] uppercase"
+              className="w-full mt-6 bg-primary text-white py-3 text-xs tracking-[0.2em] uppercase"
             >
               Apply Filters
             </button>

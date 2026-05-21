@@ -7,3 +7,18 @@
   -webkit-text-stroke: 1px #a68a3c81;
   color: transparent;
 }
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(-12deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(-12deg);
+  }
+  100% {
+    transform: translateY(0px) rotate(-12deg);
+  }
+}
+
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}

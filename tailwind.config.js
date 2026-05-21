@@ -8,7 +8,7 @@ export default {
         cormorant: ['"Cormorant"', "serif"],
       },
       colors: {
-        background: "#f1efec",
+        background: "#faf7f2",
         primary: "#A68A3C",
       },
       keyframes: {
