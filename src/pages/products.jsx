@@ -430,16 +430,37 @@ const Products = () => {
                       </div>
 
                       <div className="mt-4 md:mt-5">
-                        <h3 className="font-cormorant text-lg sm:text-xl md:text-2xl text-gray-900 leading-[1.4]">
+                        <h3
+                          className="  font-cormorant
+            text-xs
+            md:text-lg
+            uppercase
+            tracking-[0.18em]
+            text-black
+            leading-tight"
+                        >
                           {item.name}
                         </h3>
 
                         <div className="mt-1 md:mt-3 flex flex-col items-center gap-1">
-                          <p className="text-gray-400 line-through text-xs tracking-[0.2em]">
+                          <p
+                            className="
+        text-[9px]
+        md:text-[10px]
+        tracking-[0.4em]
+        uppercase
+        text-neutral-400
+        line-through"
+                          >
                             PKR {item.oldPrice.toLocaleString()}
                           </p>
 
-                          <p className="text-primary text-sm tracking-[0.25em]">
+                          <p
+                            className="text-[10px] md:text-[11px] text-primary
+        tracking-[0.55em]
+        uppercase
+       "
+                          >
                             PKR {item.price.toLocaleString()}
                           </p>
                         </div>

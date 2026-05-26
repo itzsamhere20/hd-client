@@ -1,70 +1,135 @@
-const CTASection = () => {
-  return (
-    <section className="py-16 md:py-24 space-y-12 md:space-y-16 lg:space-y-28">
-      {/* ===== FIRST CTA ===== */}
-      <div className="relative">
-        {/* FULL  BAR */}
-        <div className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-[55%] md:h-[300px] lg:h-[500px] bg-[#966b2a1e]"></div>
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import api from "./api";
+import { useNavigate } from "react-router-dom";
 
-        <div className="relative max-w-7xl mx-auto  flex flex-col md:flex-row items-center justify-between gap-12 px-4 md:px-6">
-          {/* IMAGE */}
-          <div className="w-full md:w-1/2 flex justify-end md:justify-start z-10">
-            <img
-              src="https://bijoux.vamtam.com/wp-content/uploads/2020/05/iStock-1136336605.jpg"
-              alt="necklace"
-              className="w-[260px] md:w-[300px] lg:w-[520px] object-cover drop-shadow-lg"
+const CTASection = () => {
+  const navigate = useNavigate();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const fallback = {
+    leftTitle: "Diamond Necklace",
+    leftText:
+      "A refined statement of elegance, designed to capture light and attention effortlessly.",
+    leftImage:
+      "https://bijoux.vamtam.com/wp-content/uploads/2020/05/iStock-1136336605.jpg",
+    leftBg: "#f6efe6",
+
+    rightTitle: "Bridal Collection",
+    rightText:
+      "Timeless craftsmanship curated for the most memorable moments of your life.",
+    rightImage:
+      "https://bijoux.vamtam.com/wp-content/uploads/2020/05/iStock-1136336598.jpg",
+    rightBg: "#eef3f8",
+  };
+
+  useEffect(() => {
+    const fetchHero = async () => {
+      try {
+        const res = await api.get("/settings/store/hero");
+        setData(res.data);
+      } catch (err) {
+        setData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHero();
+  }, []);
+
+  const content = data || fallback;
+
+  if (loading) {
+    return (
+      <section className="py-24 text-center">
+        <p className="tracking-[0.35em] uppercase text-[#A68A3C] animate-pulse">
+          Loading...
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="py-16 md:py-28 space-y-20 md:space-y-32">
+      {/* ================= LEFT BLOCK ================= */}
+      <div className="relative">
+        <div
+          className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-[55%] md:h-[420px] opacity-70"
+          style={{ background: content.leftBg }}
+        />
+
+        <div className="relative max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center gap-10">
+          {/* IMAGE (LEFT ALWAYS LEFT EVEN ON MOBILE) */}
+          <div className="w-full md:w-1/2 flex justify-start">
+            <motion.img
+              src={content.leftImage}
+              alt="left"
+              initial={{ clipPath: "inset(0 100% 0 0)" }}
+              whileInView={{ clipPath: "inset(0 0% 0 0)" }}
+              transition={{ duration: 1, ease: "easeInOut" }}
+              viewport={{ once: true }}
+              className="w-[240px] md:w-[380px] lg:w-[520px] object-contain drop-shadow-xl"
             />
           </div>
 
-          {/* TEXT */}
-          <div className="md:w-1/2 text-left    z-10">
-            <h2 className="font-luxury tracking-wide text-3xl md:text-4xl lg:text-7xl text-gray-900 leading-snug">
-              Beautiful Diamond Necklace
+          {/* TEXT (RIGHT SIDE ALWAYS) */}
+          <div className="w-full md:w-1/2 text-left space-y-5">
+            <h2 className="font-luxury text-3xl md:text-5xl lg:text-7xl tracking-tight text-gray-900 leading-[1.05]">
+              {content.leftTitle}
             </h2>
 
-            <p
-              className="mt-4 font-cormorant text-lg text-gray-800
-            md:max-w-md lg:max-w-lg  mr-20 md:mr-0 text-left mx-auto md:mx-0 lg:text-3xl "
-            >
-              A refined statement of elegance, designed to capture light and
-              attention effortlessly.
+            <p className="font-[Cormorant] text-lg md:text-xl lg:text-2xl text-gray-700 leading-[1.7] tracking-wide max-w-lg">
+              {content.leftText}
             </p>
 
-            <button className="mt-6 text-xs lg:text-lg uppercase tracking-widest border-b border-black hover:text-primary  hover:border-primary transition">
+            <button
+              className="text-xs md:text-sm uppercase tracking-[0.4em] border-b border-black hover:text-[#A68A3C] hover:border-[#A68A3C] transition"
+              onClick={() => navigate("/collections")}
+            >
               Discover
             </button>
           </div>
         </div>
       </div>
 
-      {/* ===== SECOND CTA (REVERSED) ===== */}
+      {/* ================= RIGHT BLOCK ================= */}
       <div className="relative">
-        {/* FULL BLEED BAR */}
-        <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 w-[55%] md:h-[300px] lg:h-[500px] bg-[#e1edf7]"></div>
+        <div
+          className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 w-[55%] md:h-[420px] opacity-70"
+          style={{ background: content.rightBg }}
+        />
 
-        <div className="relative max-w-7xl mx-auto px-4 md:px-6 flex flex-col-reverse md:flex-row items-center justify-between gap-12">
-          {/* TEXT */}
-          <div className="md:w-1/2 text-right z-10  flex flex-col items-end">
-            <h2 className="font-luxury text-3xl md:text-4xl lg:text-7xl text-gray-900 leading-snug tracking-wide">
-              Elegant Bridal Collection
+        <div className="relative max-w-7xl mx-auto px-6 flex flex-col-reverse md:flex-row items-center gap-10">
+          {/* TEXT (LEFT ON DESKTOP, RIGHT ALIGN MOBILE PRESERVED) */}
+          <div className="w-full md:w-1/2 space-y-5  md:text-right md:items-end flex flex-col text-right">
+            <h2 className="font-luxury text-3xl md:text-5xl lg:text-7xl tracking-wide text-gray-900 leading-[1.05]">
+              {content.rightTitle}
             </h2>
 
-            <p className="mt-4 font-cormorant text-lg text-gray-800 max-w-md lg:max-w-lg ml-20 md:ml-0  text-right mx-auto md:mx-0 lg:text-3xl  ">
-              Timeless craftsmanship curated for the most memorable moments of
-              your life.
+            <p className="font-[Cormorant] text-lg md:text-xl lg:text-2xl text-gray-700 leading-[1.7] tracking-wide max-w-lg md:ml-auto">
+              {content.rightText}
             </p>
 
-            <button className="mt-6 text-xs lg:text-lg uppercase tracking-widest border-b border-black hover:text-primary  hover:border-primary  transition">
+            <button
+              className="text-xs md:text-sm uppercase tracking-[0.4em] border-b border-black hover:text-[#A68A3C] hover:border-[#A68A3C] transition md:ml-auto w-max flex self-end"
+              onClick={() => navigate("/collections")}
+            >
               Discover
             </button>
           </div>
 
-          {/* IMAGE */}
-          <div className="w-full md:w-1/2 flex   md:justify-end z-10">
-            <img
-              src="https://bijoux.vamtam.com/wp-content/uploads/2020/05/iStock-1136336598.jpg"
-              alt="bridal"
-              className="w-[260px] md:w-[300px] lg:w-[520px] object-cover drop-shadow-lg"
+          {/* IMAGE (RIGHT ALWAYS RIGHT EVEN ON MOBILE) */}
+          <div className="w-full md:w-1/2 flex justify-end">
+            <motion.img
+              src={content.rightImage}
+              alt="right"
+              initial={{ clipPath: "inset(0 0 0 100%)" }}
+              whileInView={{ clipPath: "inset(0 0 0 0)" }}
+              transition={{ duration: 1, ease: "easeInOut" }}
+              viewport={{ once: true }}
+              className="w-[240px] md:w-[380px] lg:w-[520px] object-contain drop-shadow-xl"
             />
           </div>
         </div>

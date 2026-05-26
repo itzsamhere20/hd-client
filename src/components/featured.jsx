@@ -1,79 +1,193 @@
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import api from "./api";
+
 const Featured = () => {
-  const products = [
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
+
+  const fallbackProducts = [
     {
+      _id: "1",
       name: "Gold Ring",
-      price: "PKR 25,000",
-      img: "https://png.pngtree.com/png-clipart/20240721/original/pngtree-a-jewelry-ring-on-white-background-png-image_15604148.png",
+      price: 25000,
+      discount: 10,
+      type: "925 Silver",
+      image:
+        "https://png.pngtree.com/png-clipart/20240721/original/pngtree-a-jewelry-ring-on-white-background-png-image_15604148.png",
     },
     {
+      _id: "2",
       name: "Diamond Necklace",
-      price: "PKR 85,000",
-      img: "https://png.pngtree.com/png-vector/20231026/ourmid/pngtree-chopard-happy-diamonds-necklace-png-image_10368944.png",
+      price: 85000,
+      discount: 0,
+      type: "Gold",
+      image:
+        "https://png.pngtree.com/png-vector/20231026/ourmid/pngtree-chopard-happy-diamonds-necklace-png-image_10368944.png",
     },
     {
-      name: "Micro Jewellery gold Bracelet",
-      price: "PKR 150,000",
-      img: "https://static.vecteezy.com/system/resources/thumbnails/042/167/713/small/ai-generated-3d-rendering-of-a-hand-gold-chain-on-transparent-background-ai-generated-png.png",
+      _id: "3",
+      name: "Luxury Bracelet",
+      price: 150000,
+      discount: 15,
+      type: "Rose Gold",
+      image:
+        "https://static.vecteezy.com/system/resources/thumbnails/042/167/713/small/ai-generated-3d-rendering-of-a-hand-gold-chain-on-transparent-background-ai-generated-png.png",
     },
     {
+      _id: "4",
       name: "Pearl Earrings",
-      price: "PKR 18,000",
-      img: "https://www.paspaley.com/cdn/shop/files/Crescent_Moon_Diamond_Mother_Of_Pearl_and_Keshi_Pearl_Earring_Enhancers_-_White_Gold_F23AE10WKQ05_1500_x_1875_C_2.png?v=1742528428&width=2048.png",
+      price: 18000,
+      discount: 5,
+      type: "925 Silver",
+      image:
+        "https://www.paspaley.com/cdn/shop/files/Crescent_Moon_Diamond_Mother_Of_Pearl_and_Keshi_Pearl_Earring_Enhancers_-_White_Gold_F23AE10WKQ05_1500_x_1875_C_2.png",
     },
   ];
 
+  const getFinalPrice = (price, discount) => {
+    if (discount < 0) return price;
+    return Math.round(price - (price * discount) / 100);
+  };
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await api.get("/products");
+        let all = res.data || [];
+
+        if (!Array.isArray(all) || all.length < 4) {
+          setProducts(fallbackProducts);
+          setLoading(false);
+          return;
+        }
+
+        // shuffle
+        for (let i = all.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [all[i], all[j]] = [all[j], all[i]];
+        }
+
+        setProducts(
+          all.slice(0, 4).map((p) => ({
+            _id: p._id,
+            name: p.name,
+            price: p.price,
+            discount: p.discount,
+            type: p.type || "925 Silver",
+            image: p.image || p.images?.[0],
+          })),
+        );
+      } catch (err) {
+        setProducts(fallbackProducts);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const handleClick = (id) => {
+    navigate(`/collections/${id}/${id}`);
+  };
+
+  if (loading) {
+    return (
+      <section className="max-w-7xl mx-auto py-24 px-6">
+        <div className="text-[#A68A3C] tracking-[0.35em] uppercase animate-pulse">
+          Curating Collection...
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className="max-w-7xl mx-auto py-14 md:py-20 px-4 md:px-6">
-      <h2 className="text-left text-xl md:text-3xl tracking-widest uppercase mb-10 md:mb-12 text-gray-900 font-luxury">
-        Featured Collection
-      </h2>
+    <section className="max-w-7xl mx-auto py-16 md:py-24 px-4 md:px-6">
+      {/* HEADER */}
+      <div className="mb-14">
+        <p className="uppercase tracking-[0.45em] text-[11px] text-[#A68A3C] mb-3">
+          Handpicked Selection
+        </p>
 
-      {/* PRODUCTS */}
-      <div className=" flex flex-col md:flex-row gap-5 md:gap-6 overflow-x-auto lg:overflow-visible lg:justify-between">
-        {products.map((item, index) => (
-          <div
-            key={item.name}
-            className={`flex flex-col text-center
-            ${
-              index === 0 || index === 2
-                ? "w-full   md:w-[300px]"
-                : "w-full md:w-[240px]"
-            }`}
-          >
-            {/* IMAGE BACKGROUND */}
-            <div
-              className={`bg-white flex items-center justify-center   hover:scale-95 transition duration-500
-              ${
-                index === 0 || index === 2
-                  ? "h-[350px]  md:h-[380px]"
-                  : "h-[350px] md:h-[260px]"
-              }`}
+        <h2 className="text-3xl md:text-6xl font-luxury text-gray-900 leading-[1.05] tracking-[0.1em]">
+          Featured Collection
+        </h2>
+      </div>
+
+      {/* GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-12">
+        {products.map((product, index) => {
+          const isTall = index % 2 === 0;
+          const finalPrice = getFinalPrice(product.price, product.discount);
+
+          return (
+            <motion.div
+              key={product._id}
+              onClick={() => handleClick(product._id)}
+              className="group cursor-pointer"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: index * 0.1 }}
             >
-              <img
-                src={item.img}
-                alt={item.name}
-                className="max-h-[75%] object-contain transition duration-300 "
-              />
-            </div>
+              {/* IMAGE CARD */}
+              <div
+                className={`
+                  relative overflow-hidden bg-gradient-to-b from-[#faf7f2] to-white
+                  flex items-center justify-center transition duration-700
 
-            {/* TEXT */}
-            <div className="mt-3 md:mt-4 text-left">
-              <div className="flex  justify-between ">
-                <h3 className="text-base lg:text-lg text-gray-950 font-cormorant  font-bold w-[60%] ">
-                  {item.name}
-                </h3>
+                  h-[330px] md:h-[350px]
+                  ${isTall ? "lg:h-[370px]" : "lg:h-[300px]"}
+                `}
+              >
+                <motion.div
+                  className="absolute w-[60%] h-[60%] bg-[#C6A962]/10 blur-3xl rounded-full"
+                  animate={{
+                    scale: [1, 1.12, 1],
+                    opacity: [0.2, 0.45, 0.2],
+                  }}
+                  transition={{
+                    duration: 6,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
 
-                <p className="text-xs md:text-sm text-primary mt-1">
-                  {item.price}
-                </p>
+                <motion.img
+                  src={product.image}
+                  alt={product.name}
+                  className="relative z-10 max-h-[78%] object-contain group-hover:scale-[1.05] transition duration-700"
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
               </div>
 
-              <button className="mt-2 text-[10px] md:text-[10px] lg:text-[11px] uppercase tracking-widest border-b border-transparent hover:border-black transition">
-                gold .14k
-              </button>
-            </div>
-          </div>
-        ))}
+              {/* TEXT */}
+              <div className="mt-4 space-y-2 text-left">
+                <div className="flex justify-between gap-3">
+                  <h3 className="text-lg md:text-xl font-cormorant text-gray-900 font-semibold tracking-wider">
+                    {product.name}
+                  </h3>
+
+                  <p className="text-sm text-[#A68A3C] whitespace-nowrap">
+                    PKR {finalPrice.toLocaleString()}
+                  </p>
+                </div>
+
+                <button className="text-[11px] uppercase tracking-[0.35em] text-gray-500 border-b border-transparent group-hover:border-black transition pb-[2px]">
+                  {product.type}
+                </button>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
     </section>
   );

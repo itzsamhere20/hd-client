@@ -208,14 +208,19 @@ const ProductDetail = () => {
               {product.category}
             </p>
 
-            <h1 className="font-luxury text-3xl md:text-5xl lg:text-6xl text-gray-900">
+            <h1
+              className="font-cormorant   uppercase
+            tracking-[0.18em]
+            text-black
+            leading-tight text-3xl md:text-5xl"
+            >
               {product.name}
             </h1>
 
             {/* PRICE */}
             <div className="mt-8 flex items-center gap-5 flex-wrap">
               {product.discount > 0 && (
-                <p className="text-gray-400 line-through text-lg tracking-[0.15em]">
+                <p className="text-gray-400 line-through text-lg tracking-[0.4em]">
                   PKR {Number(product.price).toLocaleString()}
                 </p>
               )}
