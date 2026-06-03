@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import api from "../components/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 import {
   ArrowRight,
@@ -9,9 +11,11 @@ import {
   ShieldCheck,
   Save,
   X,
+  ArrowLeft,
 } from "lucide-react";
 
 export default function Auth() {
+  const navigate = useNavigate();
   /* ===================================================
      STATES
   =================================================== */
@@ -177,6 +181,7 @@ export default function Auth() {
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
       setUser(res.data.user);
+      window.dispatchEvent(new Event("authUpdated"));
 
       setName(res.data.user.name || "");
       setPhone(res.data.user.phone || "");
@@ -255,12 +260,13 @@ export default function Auth() {
   const logout = async () => {
     setSigningOut(true);
 
-    // 1s luxury exit animation delay
+    // 2s luxury exit animation delay
     setTimeout(() => {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
       setUser(null);
+      window.dispatchEvent(new Event("authUpdated"));
 
       setEmail("");
       setOtp("");
@@ -274,7 +280,8 @@ export default function Auth() {
       setStep("email");
 
       setSigningOut(false);
-    }, 1000);
+    }, 2000);
+    navigate(-1);
   };
 
   /* ===================================================
@@ -282,7 +289,23 @@ export default function Auth() {
   =================================================== */
   if (user && profileCompleted && step !== "profile") {
     return (
-      <div className="relative min-h-screen overflow-hidden  flex items-center justify-center px-4 py-10">
+      <div className="relative min-h-screen overflow-hidden  flex items-center justify-center px-4 py-10 flex-col">
+        {/* BACK BUTTON */}
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          onClick={() => navigate(-1)}
+          className="
+    inline-flex items-center gap-3
+    text-xs uppercase tracking-[0.25em]
+    text-gray-500 hover:text-black  w-full max-w-6xl
+    mb-10
+  "
+        >
+          <ArrowLeft size={16} />
+          Back
+        </motion.button>
+
         {/* CARD */}
         <div
           className="
@@ -447,7 +470,22 @@ export default function Auth() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden  flex items-center justify-center px-4 py-10">
+    <div className="relative min-h-screen overflow-hidden  flex items-center justify-center px-4 py-10 flex-col">
+      {/* BACK BUTTON */}
+      <motion.button
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        onClick={() => navigate(-1)}
+        className="
+    inline-flex items-center gap-3
+    text-xs uppercase tracking-[0.25em]
+    text-gray-500 hover:text-black
+    mb-10 w-full max-w-6xl 
+  "
+      >
+        <ArrowLeft size={16} />
+        Back
+      </motion.button>
       {/* MAIN CARD */}
       <div
         className="

@@ -15,6 +15,7 @@ const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState("");
   const [qty, setQty] = useState(1);
   const [qtyError, setQtyError] = useState("");
+  const [showCartSuccess, setShowCartSuccess] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -86,6 +87,17 @@ const ProductDetail = () => {
   }
 
   const soldOut = product.stock === 0;
+  // --------- products qty in cart function ---------
+
+  const getProductQtyInCart = () => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    return cart
+      .filter((item) => item.id === (product._id || product.id))
+      .reduce((sum, item) => sum + Number(item.qty || 0), 0);
+  };
+
+  const remainingStock = Math.max(0, product.stock - getProductQtyInCart());
 
   const finalPrice =
     Number(product.price) -
@@ -94,22 +106,17 @@ const ProductDetail = () => {
   // ---------qty  inc function ------------
 
   const increaseQty = () => {
-    const newQty = qty + 1;
+    const alreadyInCart = getProductQtyInCart();
 
-    if (newQty > product.stock) {
-      setQtyError(
-        "We don’t have that much stock remaining. Please contact us for bulk orders.",
-      );
-      setQty(qty + 1);
+    const totalAfterIncrease = alreadyInCart + qty + 1;
+
+    if (totalAfterIncrease > product.stock) {
+      setQtyError(`Only ${remainingStock} item(s) remaining in stock.`);
       return;
     }
 
-    setQty(newQty);
-
-    // clear error if back in range
-    if (newQty <= product.stock) {
-      setQtyError("");
-    }
+    setQty((prev) => prev + 1);
+    setQtyError("");
   };
   // ----------- qty decrease function -----------
   const decreaseQty = () => {
@@ -123,9 +130,19 @@ const ProductDetail = () => {
   };
 
   // ----------- add to cart-------------
-
   const addToCart = () => {
-    if (!product) return;
+    if (!product || soldOut) return;
+
+    const existingCart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    const totalInCart = existingCart
+      .filter((item) => item.id === (product._id || product.id))
+      .reduce((sum, item) => sum + Number(item.qty || 0), 0);
+
+    if (totalInCart + qty > product.stock) {
+      setQtyError(`Only ${remainingStock} item(s) remaining in stock.`);
+      return;
+    }
 
     const cartItem = {
       id: product._id || product.id,
@@ -137,9 +154,6 @@ const ProductDetail = () => {
       stock: product.stock,
     };
 
-    const existingCart = JSON.parse(localStorage.getItem("cart")) || [];
-
-    // check same product + same size
     const existingIndex = existingCart.findIndex(
       (item) => item.id === cartItem.id && item.size === cartItem.size,
     );
@@ -149,21 +163,21 @@ const ProductDetail = () => {
 
       updatedCart[existingIndex].qty += qty;
 
-      // stock safety check
-      if (updatedCart[existingIndex].qty > product.stock) {
-        updatedCart[existingIndex].qty = product.stock;
-      }
-
       localStorage.setItem("cart", JSON.stringify(updatedCart));
     } else {
       localStorage.setItem("cart", JSON.stringify([...existingCart, cartItem]));
     }
 
-    // optional UX improvement: open cart drawer event
     window.dispatchEvent(new Event("cartUpdated"));
+
+    setShowCartSuccess(true);
+
+    setTimeout(() => {
+      setShowCartSuccess(false);
+    }, 2500);
   };
   return (
-    <section className="min-h-screen  overflow-hidden pb-20 pt-32">
+    <section className="min-h-screen  overflow-hidden pb-20 pt-32 md:pt-40">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         {/* BACK */}
         <motion.button
@@ -220,12 +234,12 @@ const ProductDetail = () => {
             {/* PRICE */}
             <div className="mt-8 flex items-center gap-5 flex-wrap">
               {product.discount > 0 && (
-                <p className="text-gray-400 line-through text-lg tracking-[0.4em]">
+                <p className="text-gray-400 line-through md:text-lg tracking-[0.2em] md:tracking-[0.4em]">
                   PKR {Number(product.price).toLocaleString()}
                 </p>
               )}
 
-              <p className="text-primary text-2xl md:text-3xl tracking-[0.2em]">
+              <p className="text-primary text-xl md:text-3xl tracking-[0.2em]">
                 PKR {finalPrice.toLocaleString()}
               </p>
             </div>
@@ -242,9 +256,9 @@ const ProductDetail = () => {
                     <button
                       key={i}
                       onClick={() => setSelectedSize(size)}
-                      className={`min-w-[52px] h-[52px] px-6   border text-sm ${
+                      className={`min-w-[52px] h-[52px] px-6   border text-sm uppercase tracking-[0.15em] ${
                         selectedSize === size
-                          ? "bg-primary text-white border-primary"
+                          ? "bg-primary text-white border-primary "
                           : "border-[#ddd2c2]"
                       }`}
                     >
@@ -286,7 +300,7 @@ const ProductDetail = () => {
                     onClick={() =>
                       setOpenSection(openSection === sec.key ? "" : sec.key)
                     }
-                    className="w-full flex justify-between py-5 text-sm uppercase tracking-[0.25em]"
+                    className="w-full flex justify-between py-5 text-xs md:text-sm uppercase tracking-[0.25em]"
                   >
                     {sec.title}
                     <span>{openSection === sec.key ? "−" : "+"}</span>
@@ -304,7 +318,7 @@ const ProductDetail = () => {
                           height: 0,
                           opacity: 0,
                         }}
-                        className="overflow-hidden  text-gray-600 text-base md:text-base leading-[2] pb-1  capitalize tracking-wide"
+                        className="overflow-hidden  text-gray-500 text-xs md:text-sm leading-[2] pb-1  capitalize tracking-[0.1em] italic"
                       >
                         <div>{sec.value}</div>
                       </motion.div>
@@ -317,17 +331,45 @@ const ProductDetail = () => {
             {/* BUTTONS */}
             <div className="mt-12 flex gap-4 flex-col sm:flex-row">
               <button
-                disabled={qtyError}
+                disabled={qtyError || soldOut}
                 onClick={addToCart}
-                className="h-[60px] px-10 bg-primary text-white uppercase text-xs tracking-[0.25em] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="
+    h-[60px]
+    px-10
+    bg-primary
+    text-white
+    uppercase
+    text-xs
+    tracking-[0.25em]
+    disabled:opacity-50
+    disabled:cursor-not-allowed
+  "
               >
-                Add To Cart
+                {soldOut ? "Sold Out" : "Add To Cart"}
               </button>
-
               <button
-                disabled={qtyError}
-                onClick={() => navigate("/checkout")}
-                className="h-[60px] px-10 border border-primary uppercase text-xs tracking-[0.25em] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={qtyError || soldOut}
+                onClick={() => {
+                  navigate("/checkout", {
+                    state: {
+                      buyNow: true,
+                      items: [
+                        {
+                          _id: product._id,
+                          id: product._id,
+                          name: product.name,
+                          image: product.image,
+                          size: selectedSize,
+                          qty,
+                          quantity: qty,
+                          price: finalPrice,
+                          stock: product.stock,
+                        },
+                      ],
+                    },
+                  });
+                }}
+                className={`${soldOut ? "hidden" : "block"} h-[60px] px-10 border border-primary uppercase text-xs tracking-[0.25em] disabled:cursor-not-allowed disabled:opacity-50`}
               >
                 Buy Now
               </button>
@@ -340,11 +382,58 @@ const ProductDetail = () => {
           <h1 className="font-luxury tracking-wider text-3xl md:text-4xl lg:text-5xl">
             Description
           </h1>
-          <p className="font-cormorant text-lg md:text-xl lg:text-2xl py-5 text-gray-900 tracking-wide leading-snug">
+          <p className="font-cormorant text-lg md:text-xl lg:text-2xl py-5 text-gray-900 tracking-wide leading-[1.6]  lg:leading-[2] ">
             {product.description}
           </p>
         </div>
       </div>
+      <AnimatePresence>
+        {showCartSuccess && (
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: 50,
+              scale: 0.9,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              scale: 1,
+            }}
+            exit={{
+              opacity: 0,
+              y: 20,
+              scale: 0.95,
+            }}
+            transition={{
+              duration: 0.45,
+            }}
+            className="
+        fixed
+        bottom-8
+        right-6
+        z-[9999]
+        bg-white
+        border
+        border-[#e6ddd0]
+        shadow-[0_20px_60px_rgba(0,0,0,0.08)]
+        px-8
+        py-5
+        min-w-[300px]
+      "
+          >
+            <p className="text-[10px] tracking-[0.45em] uppercase text-primary">
+              Cart Updated
+            </p>
+
+            <h3 className="font-cormorant text-2xl mt-2">Added Successfully</h3>
+
+            <p className="text-[11px] tracking-[0.25em] uppercase text-neutral-500 mt-2">
+              {product?.name}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };

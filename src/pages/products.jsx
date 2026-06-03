@@ -46,8 +46,11 @@ const Products = () => {
                 Math.floor((Number(product.price) * product.discount) / 100),
             ),
             oldPrice,
+            discount: Number(product.discount || 0),
             img: product.image,
+            gender: product.gender || "Unisex",
             stock: product.stock || 0,
+            type: product.type || "Silver",
             category: cat,
           });
 
@@ -91,24 +94,29 @@ const Products = () => {
 
       if (activeCategory !== "All") {
         filteredItems = filteredItems.filter((item) => {
-          const name = item.name.toLowerCase();
-          const categoryName = category.toLowerCase();
-
-          return (
-            name.includes(activeCategory.toLowerCase()) ||
-            categoryName.includes(activeCategory.toLowerCase())
-          );
+          return category.toLowerCase() === activeCategory.toLowerCase();
         });
       }
 
-      if (
-        sortBy === "men" ||
-        sortBy === "women" ||
-        sortBy === "artificial" ||
-        sortBy === "silver"
-      ) {
-        filteredItems = filteredItems.filter((item) =>
-          item.name.toLowerCase().includes(sortBy.toLowerCase()),
+      if (sortBy === "men") {
+        filteredItems = filteredItems.filter(
+          (item) => item.gender?.toLowerCase() === "male",
+        );
+      }
+      if (sortBy === "women") {
+        filteredItems = filteredItems.filter(
+          (item) => item.gender?.toLowerCase() === "female",
+        );
+      }
+
+      if (sortBy === "artificial") {
+        filteredItems = filteredItems.filter(
+          (item) => item.type?.toLowerCase() === "artificial",
+        );
+      }
+      if (sortBy === "silver") {
+        filteredItems = filteredItems.filter(
+          (item) => item.type?.toLowerCase() === "silver",
         );
       }
 
@@ -443,21 +451,25 @@ const Products = () => {
                         </h3>
 
                         <div className="mt-1 md:mt-3 flex flex-col items-center gap-1">
-                          <p
-                            className="
-        text-[9px]
-        md:text-[10px]
-        tracking-[0.4em]
-        uppercase
-        text-neutral-400
-        line-through"
-                          >
-                            PKR {item.oldPrice.toLocaleString()}
-                          </p>
+                          {item.discount > 0 && (
+                            <p
+                              className="
+      text-[9px]
+      md:text-[10px]
+      tracking-[0.25em]
+      md:tracking-[0.4em]
+      uppercase
+      text-neutral-400
+      line-through
+    "
+                            >
+                              PKR {item.oldPrice.toLocaleString()}
+                            </p>
+                          )}
 
                           <p
                             className="text-[10px] md:text-[11px] text-primary
-        tracking-[0.55em]
+        tracking-[0.3em] md:tracking-[0.55em]
         uppercase
        "
                           >

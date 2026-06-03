@@ -10,6 +10,7 @@ import Checkout from "./pages/checkout";
 import Contact from "./pages/contact";
 import About from "./pages/aboutUs";
 import FAQ from "./pages/faq";
+import MyOrders from "./pages/orders";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/orders" element={<MyOrders />} />
         </Routes>
         <Footer />
       </Router>
