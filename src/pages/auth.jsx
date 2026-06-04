@@ -235,6 +235,7 @@ export default function Auth() {
 
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
+      window.dispatchEvent(new Event("authUpdated"));
       setUser(res.data.user);
       setSuccessMessage("Profile updated successfully");
       setEditingProfile(false);
@@ -289,7 +290,7 @@ export default function Auth() {
   =================================================== */
   if (user && profileCompleted && step !== "profile") {
     return (
-      <div className="relative min-h-screen overflow-hidden  flex items-center justify-center px-4 py-10 flex-col">
+      <div className="relative min-h-screen   flex items-center justify-center px-4 py-10 flex-col pt-20">
         {/* BACK BUTTON */}
         <motion.button
           initial={{ opacity: 0, y: 10 }}
@@ -299,7 +300,7 @@ export default function Auth() {
     inline-flex items-center gap-3
     text-xs uppercase tracking-[0.25em]
     text-gray-500 hover:text-black  w-full max-w-6xl
-    mb-10
+    mb-10 min-h-28
   "
         >
           <ArrowLeft size={16} />

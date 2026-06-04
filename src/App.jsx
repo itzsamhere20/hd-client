@@ -14,9 +14,9 @@ import MyOrders from "./pages/orders";
 
 function App() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background">
+    <div className="relative min-h-screen overflow-hidden bg-background ">
       <Router>
-        <div className="fixed inset-0 z-0 pointer-events-none hidden md:block">
+        <div className="fixed inset-0 z-0 pointer-events-none hidden md:block ">
           <div className="absolute left-[23%] top-0 bottom-0 w-px bg-[#A68A3C]/20"></div>
           <div className="absolute left-[41%] top-0 bottom-0 w-px bg-[#A68A3C]/20"></div>
           <div className="absolute left-[59%] top-0 bottom-0 w-px bg-[#A68A3C]/20"></div>

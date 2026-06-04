@@ -1,20 +1,34 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import api from "../components/api";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+
 export default function AboutUs() {
   const navigate = useNavigate();
-  const [active, setActive] = useState("Rings");
+  const [active, setActive] = useState("");
   const [scrollY, setScrollY] = useState(0);
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [owner, setOwner] = useState(null);
 
+  // ref to measure how far the moving-text section is from top
+  const marqueeRef = useRef(null);
+  const [marqueeOffset, setMarqueeOffset] = useState(0);
+
   /* ================= SCROLL ================= */
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", handleScroll);
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+      if (marqueeRef.current) {
+        const rect = marqueeRef.current.getBoundingClientRect();
+        // how far the centre of the section has been scrolled past the viewport midpoint
+        const sectionCenter = rect.top + rect.height / 2;
+        const viewportMid = window.innerHeight / 2;
+        setMarqueeOffset(viewportMid - sectionCenter); // positive = scrolled past
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -31,7 +45,6 @@ export default function AboutUs() {
         setProducts(p.data || []);
         setCategories(c.data || []);
         setOwner(o.data || null);
-        console.log(" owne values are", p.data);
       } catch (err) {
         console.log(err);
       }
@@ -40,182 +53,249 @@ export default function AboutUs() {
     fetchData();
   }, []);
 
+  /* ================= SET DEFAULT ACTIVE CATEGORY ================= */
+  useEffect(() => {
+    if (categories.length > 0 && !active) {
+      setActive(categories[0].name);
+    }
+  }, [categories]);
+
   /* ================= GROUP PRODUCTS ================= */
   const grouped = useMemo(() => {
     const map = {};
-
     products.forEach((p) => {
       const cat = p.category?.name || p.category;
       if (!map[cat]) map[cat] = [];
       map[cat].push(p);
     });
-
     Object.keys(map).forEach((k) => {
       map[k] = map[k].slice(0, 3);
     });
-
     return map;
   }, [products]);
 
   /* ================= CLAMP ================= */
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
+  // marqueeOffset goes from negative (not yet reached) to positive (scrolled past)
+  // speed multiplier: higher = faster slide
+  const speed = 0.6;
+  const hamdamX = clamp(marqueeOffset * speed, -800, 0);
+  const jewellersX = clamp(-marqueeOffset * speed, 0, 800);
+
   return (
-    <section className="overflow-hidden text-gray-900 relative max-w-7xl mx-auto px-6 py-20">
+    <section className="text-gray-900 overflow-hidden  relative">
       {/* ================= HERO ================= */}
-      <div className="relative py-12 lg:py-28 flex items-center px-6 justify-center md:justify-end">
-        <h1 className="absolute md:left-0 text-5xl md:text-6xl lg:text-7xl font-luxury text-black z-20 leading-none">
+      <div className="relative max-w-7xl mx-auto px-6 pt-20 pb-12 md:pb-20  lg:pb-28 ">
+        {/* HEADING — centred on mobile, left on md+ */}
+        <h1 className="text-center md:text-left text-5xl md:text-6xl lg:text-7xl font-luxury text-gray-900 z-20 leading-none mb-8 md:mb-0 md:absolute  md:left-6  md:top-1/2">
           Our Story
         </h1>
 
-        <img
-          src={
-            owner?.storyImage ||
-            "https://t4.ftcdn.net/jpg/05/36/09/73/360_F_536097363_JgtB1decJ8ahW5u35bDzHwWkQuDe7RVd.jpg"
-          }
-          className="w-full md:w-[85%] h-[250px] md:h-[400px] lg:h-[500px] object-cover"
-        />
+        {/* STORY IMAGE */}
+        <div className="flex md:justify-end">
+          <motion.img
+            src={
+              owner?.storyImage ||
+              "https://t4.ftcdn.net/jpg/05/36/09/73/360_F_536097363_JgtB1decJ8ahW5u35bDzHwWkQuDe7RVd.jpg"
+            }
+            alt="Our Story"
+            initial={{ clipPath: "inset(0 100% 0 0)" }}
+            whileInView={{ clipPath: "inset(0 0% 0 0)" }}
+            transition={{ duration: 1.1, ease: "easeInOut" }}
+            viewport={{ once: true }}
+            className="w-full md:w-[85%] h-[260px] md:h-[420px] lg:h-[520px] object-cover md:mt-16"
+          />
+        </div>
       </div>
 
       {/* ================= ABOUT GRID ================= */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-20 px-6 py-5 md:py-10">
-        <img
+        <motion.img
           src={
             owner?.aboutLeftImage ||
             "https://images.unsplash.com/photo-1617038220319-276d3cfab638"
           }
+          alt="About Left"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true }}
           className="w-full h-[425px] hidden md:block object-contain lg:h-[450px] mt-20"
         />
 
         <div className="flex flex-col justify-center">
+          <p className="text-[10px] uppercase tracking-[0.45em] text-primary/70 font-medium mb-4">
+            Who We Are
+          </p>
           <h2 className="font-luxury text-3xl md:text-5xl lg:text-6xl mb-6 tracking-wider md:text-center">
             About Us
           </h2>
-
-          <p className="font-cormorant text-xl lg:text-2xl leading-[1.7] text-gray-800">
+          <p className="font-cormorant text-xl leading-[1.7] lg:text-center text-gray-700">
             {owner?.aboutDescription ||
-              "With Hamdam, we’ve built a clever, customizable jewelry line that morphs with you..."}
+              "With Hamdam, we've built a clever, customizable jewelry line that morphs with you..."}
           </p>
         </div>
 
-        <img
+        <motion.img
           src={
             owner?.aboutrightImage ||
             "https://images.unsplash.com/photo-1611652022419-a9419f74343d"
           }
+          alt="About Right"
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true }}
           className="w-full h-[425px] object-contain lg:h-[450px]"
         />
       </div>
 
       {/* ================= PRECIOUS METAL ================= */}
-      <div className="max-w-7xl mx-auto px-6 py-24">
+      <div className="max-w-7xl mx-auto px-6 py-16 md:py-24">
+        <p className="text-[10px] uppercase tracking-[0.45em] text-primary/70 font-medium mb-4">
+          Craftsmanship
+        </p>
         <h2 className="font-luxury text-3xl md:text-5xl lg:text-6xl mb-16 tracking-wide">
           Precious Metal
         </h2>
-        {/* ----our value---- */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-20 xl:gap-18">
-          <div>
-            <img
-              src={
-                owner?.ourValueImage ||
-                "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d"
-              }
-              className="w-full h-[300px] object-contain"
-            />
 
-            <h3 className="font-luxury text-2xl md:text-3xl lg:text-4xl mt-8 mb-4 italic">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-20 xl:gap-18">
+          {/* OUR VALUE */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true }}
+          >
+            <div className=" h-[300px] flex items-center justify-center overflow-hidden">
+              <img
+                src={
+                  owner?.ourValueImage ||
+                  "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d"
+                }
+                alt="Our Value"
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <p className="text-[10px] uppercase tracking-[0.45em] text-primary/70 font-medium mt-8 mb-2">
+              Value
+            </p>
+            <h3 className="font-luxury text-2xl md:text-3xl lg:text-4xl mb-4 italic">
               {owner?.ourValueTitle || "Our Value"}
             </h3>
-
-            <p className="font-cormorant text-xl leading-[1.7] text-gray-800">
+            <p className="font-cormorant text-xl leading-[1.7] text-gray-700">
               {owner?.ourValueDescription ||
                 "The world is our home and we are called to leave it better than we found it."}
             </p>
-          </div>
-          {/* ------center image---- */}
-          <div className="flex justify-center md:mt-20">
+          </motion.div>
+
+          {/* CENTER IMAGE */}
+          <motion.div
+            initial={{ opacity: 0, y: 60 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true }}
+            className="flex justify-center md:mt-20"
+          >
             <img
               src={
                 owner?.preciousCenterImage ||
                 "https://i.pinimg.com/736x/21/4e/51/214e51fb17c1097fbca6cd89ae5030d2.jpg"
               }
+              alt="Precious Metal"
               className="w-full h-[400px] object-contain"
             />
-          </div>
-          {/* ------------------ourphilosophy---- */}
-          <div>
-            <h3 className="font-luxury text-2xl md:text-3xl lg:text-4xl mb-4 italic">
+          </motion.div>
+
+          {/* OUR PHILOSOPHY */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true }}
+          >
+            <p className="text-[10px] uppercase tracking-[0.45em] text-primary/70 font-medium mb-2 text-right">
+              Philosophy
+            </p>
+            <h3 className="font-luxury text-2xl md:text-3xl lg:text-4xl mb-4 italic text-right">
               {owner?.philosophyTitle || "Our Philosophy"}
             </h3>
-
-            <p className="font-cormorant text-xl leading-[1.7] text-gray-800 mb-10">
+            <p className="font-cormorant text-xl leading-[1.7] text-gray-700 mb-10 text-right">
               {owner?.philosophyDescription ||
                 "Built on the idea that life is yours for the making..."}
             </p>
-
-            <img
-              src={
-                owner?.philosophyImage ||
-                "https://images.unsplash.com/photo-1605100804763-247f67b3557e"
-              }
-              className="w-full h-[300px] object-contain"
-            />
-          </div>
+            <div className=" h-[300px] flex items-center justify-center overflow-hidden">
+              <img
+                src={
+                  owner?.philosophyImage ||
+                  "https://images.unsplash.com/photo-1605100804763-247f67b3557e"
+                }
+                alt="Philosophy"
+                className="w-full h-full object-contain z-10"
+              />
+            </div>
+          </motion.div>
         </div>
       </div>
 
       {/* ================= MOVING TEXT ================= */}
-      <div className="relative py-32 overflow-hidden">
+      <div
+        ref={marqueeRef}
+        className="relative !w-screen left-1/2 -translate-x-1/2 py-20 overflow-hidden"
+      >
+        {/* HAMDAM — starts off left, slides right into view */}
         <h1
-          className="font-luxury uppercase text-primary/10 whitespace-nowrap text-[60px] sm:text-[100px] md:text-[160px] lg:text-[220px]"
+          className="absolute left-0 top-0 font-bold uppercase stroke-text leading-none whitespace-nowrap"
           style={{
-            transform: `translateX(${clamp(-500 + scrollY * 0.2, -500, 80)}px)`,
+            fontSize: "clamp(56px, 16vw, 200px)",
+            transform: `translateX(${hamdamX}px)`,
+            willChange: "transform",
           }}
         >
           HAMDAM
         </h1>
 
-        <p className="font-cormorant text-center max-w-2xl mx-auto text-xl md:text-3xl text-gray-700">
-          At Hamdam Jewellers, every piece is crafted with precision and
-          passion.
-        </p>
+        <div className="relative z-10 flex justify-center font-cormorant py-32 md:py-40 px-6">
+          <p className="max-w-2xl text-center text-gray-700 text-xl md:text-3xl lg:text-4xl leading-[1.6] italic">
+            At Hamdam Jewellers, every piece is crafted with precision and
+            passion. We blend tradition with modern elegance to create timeless
+            jewelry.
+          </p>
+        </div>
 
+        {/* JEWELLERS — starts off right, slides left into view */}
         <h1
-          className="font-luxury uppercase text-primary/10 text-right whitespace-nowrap text-[60px] sm:text-[100px] md:text-[160px] lg:text-[220px]"
+          className="absolute right-0 bottom-0 font-bold uppercase stroke-text leading-none whitespace-nowrap text-right"
           style={{
-            transform: `translateX(${clamp(500 - scrollY * 0.2, 80, 500)}px)`,
+            fontSize: "clamp(56px, 16vw, 200px)",
+            transform: `translateX(${jewellersX}px)`,
+            willChange: "transform",
           }}
         >
-          JEWELLERS
+          JEWELLERY
         </h1>
       </div>
 
-      {/* ===== ORIGINS ===== */}
-      <div className="relative max-w-7xl mx-auto px-6 md:py-16 md:mb-20 flex justify-end flex-col md:flex-row items-center">
-        <img
+      {/* ================= ORIGINS ================= */}
+      <div className="max-w-7xl mx-auto px-6 py-20 md:py-28 flex flex-col md:flex-row items-center gap-10 md:gap-0 justify-end relative">
+        <motion.img
           src={
             owner?.image ||
             "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
           }
           alt={owner?.name || "Hamdam"}
-          className="
-            w-[320px] md:w-[50%] lg:w-[40%] 
-            h-[450px] md:h-[400px] lg:h-[600px]
-            object-cover
-          "
+          initial={{ clipPath: "inset(0 100% 0 0)" }}
+          whileInView={{ clipPath: "inset(0 0% 0 0)" }}
+          transition={{ duration: 1, ease: "easeInOut" }}
+          viewport={{ once: true }}
+          className="w-full md:w-[50%] lg:w-[40%] h-[450px] md:h-[400px] lg:h-[600px] object-cover"
         />
 
-        <div
-          className="
-            relative lg:absolute
-            left-0 lg:left-[5%]
-            bottom -0 md:-bottom-[10%]
-
-          
-            p-8 md:p-14
-            max-w-xl
-          "
-        >
+        <div className="relative lg:absolute left-0 lg:left-[5%] p-8 md:p-14 max-w-xl bg-[#f8f5f0]/95">
+          <p className="text-[10px] uppercase tracking-[0.45em] text-primary/70 font-medium mb-4">
+            Our Roots
+          </p>
           <h2 className="font-luxury text-3xl md:text-4xl lg:text-5xl tracking-wider mb-6">
             Our Origins &
             <br />
@@ -223,29 +303,36 @@ export default function AboutUs() {
           </h2>
           <p className="font-cormorant text-xl lg:text-2xl italic leading-[1.7] text-gray-700">
             {owner?.description ||
-              "Hamdam was founded with a vision to blend timeless artistry with modern luxury. We continue to craft pieces that celebrate elegance,identity and unforgettable moments."}
+              "Hamdam was founded with a vision to blend timeless artistry with modern luxury. We continue to craft pieces that celebrate elegance, identity and unforgettable moments."}
           </p>
         </div>
       </div>
 
       {/* ================= COLLECTIONS ================= */}
-      <div className="max-w-7xl mx-auto px-6 pt-24">
-        <p className="font-cormorant text-2xl md:text-3xl mb-16 text-gray-700">
+      <div className="max-w-7xl mx-auto px-6 pt-20 pb-28">
+        <p className="text-[10px] uppercase tracking-[0.45em] text-primary/70 font-medium mb-4">
+          Collections
+        </p>
+        <p className="font-cormorant text-2xl md:text-3xl mb-16 text-gray-700 italic">
           Explore our curated collections crafted with timeless beauty.
         </p>
 
         <div className="flex flex-col lg:flex-row gap-16">
-          {/* CATEGORIES */}
-          <div className="flex lg:flex-col gap-6 lg:gap-10 flex-wrap justify-start">
+          {/* CATEGORY TABS */}
+          <div className="flex lg:flex-col gap-3 flex-wrap">
             {categories.map((cat) => (
               <button
                 key={cat._id || cat.name}
                 onClick={() => setActive(cat.name)}
-                className={`text-2xl md:text-3xl font-cormorant transition ${
-                  active === cat.name
-                    ? "opacity-100 text-primary italic"
-                    : "opacity-30"
-                }`}
+                className={`
+                  px-5 h-[42px] text-sm tracking-[0.15em] whitespace-nowrap
+                  border transition-all duration-300
+                  ${
+                    active === cat.name
+                      ? "bg-primary text-white border-primary"
+                      : "text-gray-700 border-[#ddd2c2] hover:border-black"
+                  }
+                `}
               >
                 {cat.name}
               </button>
@@ -253,129 +340,55 @@ export default function AboutUs() {
           </div>
 
           {/* PRODUCTS */}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 flex-1">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 md:gap-x-8 gap-y-12 flex-1">
             {(grouped[active] || []).map((item, index) => (
-              <motion.button
+              <motion.div
                 key={item._id}
-                initial={{ opacity: 0, y: 80 }}
+                initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, margin: "-100px" }}
                 transition={{
                   duration: 0.8,
                   delay: index * 0.12,
-                  ease: [0.22, 1, 0.36, 1],
+                  ease: [0.25, 0.1, 0.25, 1],
                 }}
                 whileHover={{ y: -8 }}
-                className="group text-center"
                 onClick={() =>
                   navigate(`/collections/${item.category}/${item._id}`)
                 }
+                className="group text-center cursor-pointer"
               >
-                {/* IMAGE */}
-                <div
-                  className="
-          relative
-          h-[280px] md:h-[360px]
-          bg-[#faf8f5]
-          overflow-hidden
-          flex items-center justify-center
-        "
-                >
-                  {/* luxury overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-transparent to-black/5 opacity-0 group-hover:opacity-100 transition duration-700 z-10" />
-
-                  <motion.img
+                <div className="relative bg-white flex items-center justify-center h-[200px] sm:h-[240px] md:h-[350px] lg:h-[380px] overflow-hidden">
+                  <img
                     src={item.image}
                     alt={item.name}
-                    whileHover={{ scale: 1.06 }}
-                    transition={{ duration: 0.7 }}
-                    className="
-            h-[82%]
-            w-[82%]
-            object-scale-down
-            relative
-            z-0
-          "
+                    className="h-[100%] object-contain transition duration-700 group-hover:scale-105"
                   />
                 </div>
 
-                {/* DETAILS */}
-                <div className="pt-7 space-y-3">
-                  {/* category */}
-                  <p
-                    className="
-            text-[10px]
-            uppercase
-            tracking-[0.45em]
-            text-primary/70
-            font-medium
-          "
-                  >
+                <div className="mt-4 md:mt-5">
+                  <p className="text-[10px] uppercase tracking-[0.45em] text-primary/70 font-medium">
                     {item.type}
                   </p>
-
-                  {/* name */}
-                  <h3
-                    className="
-            font-cormorant
-            text-lg
-            md:text-
-            uppercase
-            tracking-[0.18em]
-            text-black
-            leading-tight
-          "
-                  >
+                  <h3 className="font-cormorant text-xs md:text-lg uppercase tracking-[0.18em] text-black leading-tight mt-1">
                     {item.name}
                   </h3>
-
-                  {/* price */}
-                  {item.discount > 0 ? (
-                    <div className="space-y-2">
-                      {/* FINAL PRICE */}
-                      <p
-                        className="
-        text-[11px]
-        tracking-[0.55em]
-        uppercase
-        text-neutral-700
-      "
-                      >
-                        PKR{" "}
-                        {(
-                          Number(item.price) -
-                          Math.floor((Number(item.price) * item.discount) / 100)
-                        ).toLocaleString("en-PK")}
-                      </p>
-
-                      {/* OLD PRICE */}
-                      <p
-                        className="
-        text-[10px]
-        tracking-[0.4em]
-        uppercase
-        text-neutral-400
-        line-through
-      "
-                      >
+                  <div className="mt-1 md:mt-3 flex flex-col items-center gap-1">
+                    {item.discount > 0 && (
+                      <p className="text-[9px] md:text-[10px] tracking-[0.4em] uppercase text-neutral-400 line-through">
                         PKR {Number(item.price).toLocaleString("en-PK")}
                       </p>
-                    </div>
-                  ) : (
-                    <p
-                      className="
-      text-[11px]
-      tracking-[0.55em]
-      uppercase
-      text-neutral-500
-    "
-                    >
-                      PKR {Number(item.price).toLocaleString("en-PK")}
+                    )}
+                    <p className="text-[10px] md:text-[11px] text-primary tracking-[0.3em] md:tracking-[0.55em] uppercase">
+                      PKR{" "}
+                      {(
+                        Number(item.price) -
+                        Math.floor((Number(item.price) * item.discount) / 100)
+                      ).toLocaleString("en-PK")}
                     </p>
-                  )}
+                  </div>
                 </div>
-              </motion.button>
+              </motion.div>
             ))}
           </div>
         </div>
