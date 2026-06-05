@@ -212,7 +212,7 @@ export default function Checkout() {
       localStorage.setItem("token", res.data.token);
 
       localStorage.setItem("user", JSON.stringify(res.data.user));
-
+      window.dispatchEvent(new Event("authUpdated"));
       setUser(res.data.user);
 
       setName(res.data.user.name || "");
@@ -296,8 +296,9 @@ export default function Checkout() {
       );
 
       localStorage.setItem("user", JSON.stringify(res.data.user));
-
+      window.dispatchEvent(new Event("authUpdated"));
       setUser(res.data.user);
+      window.dispatchEvent(new Event("authUpdated"));
 
       setEditOpen(false);
 
@@ -579,7 +580,7 @@ export default function Checkout() {
       initial="hidden"
       animate="visible"
       variants={pageVariants}
-      className="min-h-screen pt-24 pb-20 px-4 md:px-8"
+      className="min-h-screen pt-24 md:pt-40 pb-20 px-4 md:px-8"
     >
       <div className="max-w-7xl mx-auto ">
         {/* STEPPER */}
@@ -602,7 +603,7 @@ export default function Checkout() {
               {step === 1 && (
                 <motion.div
                   variants={cardVariants}
-                  className="relative bg-white rounded-md border border-[#ece7df] p-8 shadow-[0_10px_40px_rgba(0,0,0,0.04)] z-[9999]"
+                  className="relative bg-white rounded-md border border-[#ece7df] p-8 shadow-[0_10px_40px_rgba(0,0,0,0.04)] z-[9]"
                 >
                   <div className="flex w-full justify-between">
                     <p className="text-[11px] tracking-[0.45em] uppercase text-neutral-400">
@@ -1335,7 +1336,7 @@ export default function Checkout() {
           EDIT MODAL
       ========================================================= */}
       {editOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[99] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="w-full max-w-lg bg-white rounded-mdoverflow-hidden border border-[#ece7df] shadow-[0_20px_80px_rgba(0,0,0,0.12)]">
             {/* HEADER */}
             <div className="px-7 py-6 border-b border-[#f1ece5] flex items-center justify-between">
@@ -1493,7 +1494,7 @@ export default function Checkout() {
 
       {/* ------------------ error modal --------------- */}
       {errorModal.open && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.92, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -1554,7 +1555,7 @@ export default function Checkout() {
             SUCCESS MODAL
            ======================================================= */}
       {successModal.open && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+        <div className="fixed inset-0 z-[99] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.92, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}

@@ -3,48 +3,94 @@ import { motion } from "framer-motion";
 import api from "./api";
 import { useNavigate } from "react-router-dom";
 
+const fallback = {
+  leftTitle: "Diamond Necklace",
+  leftText:
+    "A refined statement of elegance, designed to capture light and attention effortlessly.",
+  leftImage:
+    "https://bijoux.vamtam.com/wp-content/uploads/2020/05/iStock-1136336605.jpg",
+  leftBg: "#ede4d8",
+  rightTitle: "Bridal Collection",
+  rightText:
+    "Timeless craftsmanship curated for the most memorable moments of your life.",
+  rightImage:
+    "https://bijoux.vamtam.com/wp-content/uploads/2020/05/iStock-1136336598.jpg",
+  rightBg: "#dfeaf2",
+};
+
 const CTASection = () => {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fallback = {
-    leftTitle: "Diamond Necklace",
-    leftText:
-      "A refined statement of elegance, designed to capture light and attention effortlessly.",
-    leftImage:
-      "https://bijoux.vamtam.com/wp-content/uploads/2020/05/iStock-1136336605.jpg",
-    leftBg: "#f6efe6",
-
-    rightTitle: "Bridal Collection",
-    rightText:
-      "Timeless craftsmanship curated for the most memorable moments of your life.",
-    rightImage:
-      "https://bijoux.vamtam.com/wp-content/uploads/2020/05/iStock-1136336598.jpg",
-    rightBg: "#eef3f8",
-  };
-
   useEffect(() => {
-    const fetchHero = async () => {
+    const fallback = {
+      leftTitle: "Diamond Necklace",
+      leftText:
+        "A refined statement of elegance, designed to capture light and attention effortlessly.",
+      leftImage:
+        "https://bijoux.vamtam.com/wp-content/uploads/2020/05/iStock-1136336605.jpg",
+      leftBg: "#ede4d8",
+      rightTitle: "Bridal Collection",
+      rightText:
+        "Timeless craftsmanship curated for the most memorable moments of your life.",
+      rightImage:
+        "https://bijoux.vamtam.com/wp-content/uploads/2020/05/iStock-1136336598.jpg",
+      rightBg: "#dfeaf2",
+    };
+
+    const getCachedData = () => {
+      try {
+        const cached = localStorage.getItem("CTA_CACHE");
+        if (!cached) return null;
+
+        const parsed = JSON.parse(cached);
+        return parsed?.data || null;
+      } catch {
+        return null;
+      }
+    };
+
+    const fetchFromAPI = async () => {
       try {
         const res = await api.get("/settings/store/hero");
+
         setData(res.data);
+
+        localStorage.setItem(
+          "CTA_CACHE",
+          JSON.stringify({
+            data: res.data,
+            time: Date.now(),
+          }),
+        );
       } catch (err) {
-        setData(null);
+        console.log("API failed, keeping cached CTA data");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchHero();
-  }, []);
+    // 1️⃣ instant load
+    const cached = getCachedData();
 
+    if (cached) {
+      setData(cached);
+      setLoading(false);
+    } else {
+      setData(fallback);
+      setLoading(false);
+    }
+
+    // 2️⃣ background refresh
+    fetchFromAPI();
+  }, []);
   const content = data || fallback;
 
   if (loading) {
     return (
-      <section className="py-24 text-center">
-        <p className="tracking-[0.35em] uppercase text-[#A68A3C] animate-pulse">
+      <section className="py-24 flex items-center justify-center bg-[#f8f5f0]">
+        <p className="uppercase tracking-[0.45em] text-primary/60 animate-pulse text-xs">
           Loading...
         </p>
       </section>
@@ -52,41 +98,40 @@ const CTASection = () => {
   }
 
   return (
-    <section className="py-16 md:py-28 space-y-20 md:space-y-32">
-      {/* ================= LEFT BLOCK ================= */}
+    <section className=" py-16 md:py-28 space-y-20 md:space-y-32">
+      {/* ── LEFT BLOCK ── */}
       <div className="relative">
+        {/* colour slab */}
         <div
-          className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-[55%] md:h-[420px] opacity-70"
-          style={{ background: content.leftBg }}
+          className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 w-[52%] h-[380px] md:h-[420px]"
+          style={{ backgroundColor: content.leftBg, opacity: 0.8 }}
         />
 
         <div className="relative max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center gap-10">
-          {/* IMAGE (LEFT ALWAYS LEFT EVEN ON MOBILE) */}
+          {/* IMAGE */}
           <div className="w-full md:w-1/2 flex justify-start">
             <motion.img
               src={content.leftImage}
-              alt="left"
+              alt={content.leftTitle}
               initial={{ clipPath: "inset(0 100% 0 0)" }}
               whileInView={{ clipPath: "inset(0 0% 0 0)" }}
               transition={{ duration: 1, ease: "easeInOut" }}
               viewport={{ once: true }}
-              className="w-[240px] md:w-[380px] lg:w-[520px] object-contain drop-shadow-xl"
+              className="w-[220px] md:w-[360px] lg:w-[480px] object-contain drop-shadow-xl"
             />
           </div>
 
-          {/* TEXT (RIGHT SIDE ALWAYS) */}
-          <div className="w-full md:w-1/2 text-left space-y-5">
-            <h2 className="font-luxury text-3xl md:text-5xl lg:text-7xl tracking-tight text-gray-900 leading-[1.05]">
+          {/* TEXT */}
+          <div className="w-full md:w-1/2 space-y-5">
+            <h2 className="font-luxury text-3xl md:text-5xl lg:text-6xl text-gray-900 leading-[1.05]">
               {content.leftTitle}
             </h2>
-
-            <p className="font-[Cormorant] text-lg md:text-xl lg:text-2xl text-gray-700 leading-[1.7] tracking-wide max-w-lg">
+            <p className="font-cormorant text-xl md:text-2xl text-gray-600 leading-[1.7] max-w-md">
               {content.leftText}
             </p>
-
             <button
-              className="text-xs md:text-sm uppercase tracking-[0.4em] border-b border-black hover:text-[#A68A3C] hover:border-[#A68A3C] transition"
               onClick={() => navigate("/collections")}
+              className="text-xs uppercase tracking-[0.35em] border-b border-gray-400 hover:border-primary hover:text-primary transition pb-1"
             >
               Discover
             </button>
@@ -94,42 +139,41 @@ const CTASection = () => {
         </div>
       </div>
 
-      {/* ================= RIGHT BLOCK ================= */}
+      {/* ── RIGHT BLOCK ── */}
       <div className="relative">
+        {/* colour slab */}
         <div
-          className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 w-[55%] md:h-[420px] opacity-70"
-          style={{ background: content.rightBg }}
+          className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 w-[52%] h-[380px] md:h-[420px]"
+          style={{ backgroundColor: content.rightBg, opacity: 0.8 }}
         />
 
         <div className="relative max-w-7xl mx-auto px-6 flex flex-col-reverse md:flex-row items-center gap-10">
-          {/* TEXT (LEFT ON DESKTOP, RIGHT ALIGN MOBILE PRESERVED) */}
-          <div className="w-full md:w-1/2 space-y-5  md:text-right md:items-end flex flex-col text-right">
-            <h2 className="font-luxury text-3xl md:text-5xl lg:text-7xl tracking-wide text-gray-900 leading-[1.05]">
+          {/* TEXT */}
+          <div className="w-full md:w-1/2 space-y-5 text-right flex flex-col items-end">
+            <h2 className="font-luxury text-3xl md:text-5xl lg:text-6xl text-gray-900 leading-[1.05]">
               {content.rightTitle}
             </h2>
-
-            <p className="font-[Cormorant] text-lg md:text-xl lg:text-2xl text-gray-700 leading-[1.7] tracking-wide max-w-lg md:ml-auto">
+            <p className="font-cormorant text-xl md:text-2xl text-gray-600 leading-[1.7] max-w-md text-right">
               {content.rightText}
             </p>
-
             <button
-              className="text-xs md:text-sm uppercase tracking-[0.4em] border-b border-black hover:text-[#A68A3C] hover:border-[#A68A3C] transition md:ml-auto w-max flex self-end"
               onClick={() => navigate("/collections")}
+              className="text-xs uppercase tracking-[0.35em] border-b border-gray-400 hover:border-primary hover:text-primary transition pb-1"
             >
               Discover
             </button>
           </div>
 
-          {/* IMAGE (RIGHT ALWAYS RIGHT EVEN ON MOBILE) */}
+          {/* IMAGE */}
           <div className="w-full md:w-1/2 flex justify-end">
             <motion.img
               src={content.rightImage}
-              alt="right"
+              alt={content.rightTitle}
               initial={{ clipPath: "inset(0 0 0 100%)" }}
               whileInView={{ clipPath: "inset(0 0 0 0)" }}
               transition={{ duration: 1, ease: "easeInOut" }}
               viewport={{ once: true }}
-              className="w-[240px] md:w-[380px] lg:w-[520px] object-contain drop-shadow-xl"
+              className="w-[220px] md:w-[360px] lg:w-[480px] object-contain drop-shadow-xl"
             />
           </div>
         </div>

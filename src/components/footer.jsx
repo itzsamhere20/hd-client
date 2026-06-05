@@ -1,204 +1,283 @@
+import { useEffect, useRef, useState } from "react";
 import { FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { Link } from "react-router-dom";
-
+import api from "./api";
 const Footer = () => {
+  const marqueeRef = useRef(null);
+  const [offset, setOffset] = useState(0);
+  const [categories, setCategories] = useState([]);
+  const fallbackCategories = [
+    { _id: "rings", name: "Rings" },
+    { _id: "necklace", name: "Necklace" },
+    { _id: "earrings", name: "Earrings" },
+    { _id: "bracelets", name: "Bracelets" },
+  ];
+  const [contact, setContact] = useState({
+    facebook: "",
+    instagram: "",
+    whatsapp: "",
+  });
+
+  // -fetch socials-------
+  useEffect(() => {
+    const fetchFromAPI = async () => {
+      try {
+        const res = await api.get("/settings/store/contact");
+
+        const data = res.data || {};
+
+        setContact(data);
+
+        localStorage.setItem(
+          "footer-contact-cache",
+          JSON.stringify({
+            data,
+            time: Date.now(),
+          }),
+        );
+      } catch (err) {
+        console.log("Contact fetch failed");
+      }
+    };
+
+    const getCachedData = () => {
+      try {
+        const cached = localStorage.getItem("footer-contact-cache");
+        if (!cached) return null;
+
+        const parsed = JSON.parse(cached);
+        return parsed?.data || null;
+      } catch {
+        return null;
+      }
+    };
+
+    // 1️⃣ instant cache
+    const cached = getCachedData();
+
+    if (cached) {
+      setContact(cached);
+    }
+
+    // 2️⃣ background refresh
+    fetchFromAPI();
+  }, []);
+  const safeLink = (url) => (url ? url : "#");
+  // -----scroll evebt---------------
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!marqueeRef.current) return;
+      const rect = marqueeRef.current.getBoundingClientRect();
+      const sectionCenter = rect.top + rect.height / 2;
+      const viewportMid = window.innerHeight / 2;
+      setOffset(viewportMid - sectionCenter);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+  const speed = 0.2;
+  const luxuryX = clamp(offset * speed, -300, 0);
+  const jewelsX = clamp(-offset * speed, 0, 300);
+
+  // -------categories-----------
+
+  useEffect(() => {
+    const fallbackCategories = [
+      { _id: "rings", name: "Rings" },
+      { _id: "necklace", name: "Necklace" },
+      { _id: "earrings", name: "Earrings" },
+      { _id: "bracelets", name: "Bracelets" },
+    ];
+
+    const fetchFromAPI = async () => {
+      try {
+        const res = await api.get("/categories");
+
+        const finalData =
+          Array.isArray(res.data) && res.data.length > 0
+            ? res.data
+            : fallbackCategories;
+
+        setCategories(finalData);
+
+        localStorage.setItem(
+          "footer-categories-cache",
+          JSON.stringify({
+            data: finalData,
+            time: Date.now(),
+          }),
+        );
+      } catch (err) {
+        console.log("Category API failed (keeping cache)");
+      }
+    };
+
+    const getCachedData = () => {
+      try {
+        const cached = localStorage.getItem("footer-categories-cache");
+        if (!cached) return null;
+
+        const parsed = JSON.parse(cached);
+        return parsed?.data || null;
+      } catch {
+        return null;
+      }
+    };
+
+    // 1️⃣ instant UI
+    const cached = getCachedData();
+
+    if (cached && cached.length) {
+      setCategories(cached);
+    } else {
+      setCategories(fallbackCategories);
+    }
+
+    // 2️⃣ background refresh
+    fetchFromAPI();
+  }, []);
   return (
-    <footer className="relative overflow-hidden py-20 px-6 md:mt-20">
-      {/* ===== LOGO ===== */}
-      <div className="text-center">
-        <h2 className="font-luxury text-4xl md:text-6xl text-gray-900 tracking-[0.25em]">
+    <footer className="relative overflow-visible pt-20 pb-10 ">
+      {/* ── LOGO ── */}
+      <div className="text-center mb-16">
+        <h2 className="font-luxury text-4xl md:text-6xl text-gray-900 tracking-[0.3em]">
           HAMDAM
         </h2>
+        <p className="text-[12px] uppercase tracking-[0.45em] text-primary/70 font-medium mt-3">
+          Jewellery
+        </p>
       </div>
 
-      {/* ===== LINKS ===== */}
-      <div
-        className="
-          mt-16
-          grid grid-cols-1 md:grid-cols-3
-          gap-10 
-          md:gap-0
-          text-center
-          max-w-5xl
-          mx-auto
-        
-        "
-      >
-        {/* ABOUT */}
+      {/* ── LINKS ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-0 text-center max-w-4xl mx-auto mb-20">
         <div>
-          <h3 className="font-luxury text-lg  md:text-2xl text-gray-900 mb-6">
+          <h3 className="font-luxury text-lg md:text-xl text-gray-900 mb-6 tracking-[0.15em]">
             About
           </h3>
-
-          <ul className="flex flex-col space-y-4 font-cormorant text-base md:text-xl text-gray-800">
-            <Link
-              to="/about"
-              className="hover:text-primary transition cursor-pointer"
-            >
-              Our Story
-            </Link>
-
-            <Link
-              to="/contact"
-              className="hover:text-primary transition cursor-pointer"
-            >
-              Contact
-            </Link>
+          <ul className="flex flex-col space-y-4 font-cormorant text-base md:text-xl text-gray-700">
+            <li>
+              <Link to="/about" className="hover:text-primary transition">
+                Our Story
+              </Link>
+            </li>
+            <li>
+              <Link to="/contact" className="hover:text-primary transition">
+                Contact
+              </Link>
+            </li>
           </ul>
         </div>
-
-        {/* STORE */}
+        {/* ---------------- store----------- */}
         <div>
-          <h3 className="font-luxury text-lg  md:text-2xl text-gray-900 mb-6">
+          <h3 className="font-luxury text-lg md:text-xl text-gray-900 mb-6 tracking-[0.15em]">
             Store
           </h3>
 
-          <ul className="space-y-4 font-cormorant text-base md:text-xl text-gray-800  ">
-            <li className="hover:text-primary transition cursor-pointer">
-              Rings
-            </li>
-
-            <li className="hover:text-primary transition cursor-pointer">
-              Necklace
-            </li>
-
-            <li className="hover:text-primary transition cursor-pointer">
-              Earrings
-            </li>
-
-            <li className="hover:text-primary transition cursor-pointer">
-              Bracelets
-            </li>
+          <ul className="flex flex-col space-y-4 font-cormorant text-base md:text-xl text-gray-700">
+            {categories.map((cat) => (
+              <li key={cat._id}>
+                <Link
+                  to={`/collections/${cat.name.toLowerCase()}`}
+                  className="hover:text-primary transition"
+                >
+                  {cat.name}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
-
-        {/* CARE */}
         <div>
-          <h3 className="font-luxury text-lg  md:text-2xl text-gray-900 mb-6">
+          <h3 className="font-luxury text-lg md:text-xl text-gray-900 mb-6 tracking-[0.15em]">
             Care
           </h3>
-
-          <ul className=" flex flex-col space-y-4 font-cormorant text-base md:text-xl text-gray-800">
-            <Link
-              to="/faq"
-              className="hover:text-primary transition cursor-pointer"
-            >
-              Delivery
-            </Link>
-
-            <Link
-              to="/faq"
-              className="hover:text-primary transition cursor-pointer"
-            >
-              Cancellation & Return
-            </Link>
-
-            <Link
-              to="/faq"
-              className="hover:text-primary transition cursor-pointer"
-            >
-              FAQ
-            </Link>
+          <ul className="flex flex-col space-y-4 font-cormorant text-base md:text-xl text-gray-700">
+            <li>
+              <Link to="/faq" className="hover:text-primary transition">
+                Delivery
+              </Link>
+            </li>
+            <li>
+              <Link to="/faq" className="hover:text-primary transition">
+                Cancellation & Return
+              </Link>
+            </li>
+            <li>
+              <Link to="/faq" className="hover:text-primary transition">
+                FAQ
+              </Link>
+            </li>
           </ul>
         </div>
       </div>
 
-      {/* ===== HUGE MOVING TEXT SECTION ===== */}
-      <div className="relative mt-28 py-24 overflow-hidden">
-        {/* LEFT TEXT */}
-        <h1
-          className="
-            absolute
-            left-[-10%]
-            top-1/2
-            -translate-y-1/2
-
-            text-[70px]
-            md:text-[140px]
-            lg:text-[220px]
-
-            font-luxury
-            text-primary/10
-            whitespace-nowrap
-            select-none
-          "
-        >
-          LUXURY
-        </h1>
-
-        {/* RIGHT TEXT */}
-        <h1
-          className="
-            absolute
-            right-[-10%]
-            top-1/2
-            -translate-y-1/2
-
-            text-[70px]
-            md:text-[140px]
-            lg:text-[220px]
-
-            font-luxury
-            text-primary/10
-            whitespace-nowrap
-            select-none
-          "
-        >
-          JEWELS
-        </h1>
-
-        {/* SOCIAL ICONS */}
-        <div className="relative z-10 flex justify-center items-center gap-8">
-          <a
-            href="#"
-            className="
-              w-14 h-14
-              border border-primary/30
-              rounded-full
-              flex items-center justify-center
-              hover:bg-primary
-              hover:text-white
-              transition duration-500
-            "
+      {/* ── PARALLAX TEXT + SOCIAL ── */}
+      <div ref={marqueeRef} className="overflow-visible py-6">
+        {/* LUXURY — full width, slides from left */}
+        <div className="overflow-visible">
+          <h1
+            className="font-luxury leading-none select-none text-left block"
+            style={{
+              fontSize: "18vw",
+              color: "var(--color-primary, #b8860b)",
+              opacity: 0.1,
+              transform: `translateX(${luxuryX}px)`,
+              willChange: "transform",
+            }}
           >
-            <FaFacebookF size={22} />
-          </a>
+            LUXURY
+          </h1>
+        </div>
 
-          <a
-            href="#"
-            className="
-              w-14 h-14
-              border border-primary/30
-              rounded-full
-              flex items-center justify-center
-              hover:bg-primary
-              hover:text-white
-              transition duration-500
-            "
-          >
-            <FaInstagram size={22} />
-          </a>
+        {/* SOCIAL ICONS — centred between the two words */}
+        <div className="flex justify-center items-center gap-6 py-8">
+          {[
+            {
+              Icon: FaFacebookF,
+              href: safeLink(contact.facebook),
+            },
+            {
+              Icon: FaInstagram,
+              href: safeLink(contact.instagram),
+            },
+            {
+              Icon: FaWhatsapp,
+              href: contact.phone ? `https://wa.me/${contact.phone}` : "#",
+            },
+          ].map(({ Icon, href }, i) => (
+            <a
+              key={i}
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              className="w-12 h-12 border border-[#ddd2c2] flex items-center justify-center text-gray-600 hover:bg-primary hover:text-white hover:border-primary transition duration-500"
+            >
+              <Icon size={18} />
+            </a>
+          ))}
+        </div>
 
-          <a
-            href="#"
-            className="
-              w-14 h-14
-              border border-primary/30
-              rounded-full
-              flex items-center justify-center
-              hover:bg-primary
-              hover:text-white
-              transition duration-500
-            "
+        {/* JEWELS — full width, slides from right */}
+        <div className="overflow-visible">
+          <h1
+            className="font-luxury leading-none select-none text-right block"
+            style={{
+              fontSize: "18vw",
+              color: "var(--color-primary, #b8860b)",
+              opacity: 0.1,
+              transform: `translateX(${jewelsX}px)`,
+              willChange: "transform",
+            }}
           >
-            <FaWhatsapp size={22} />
-          </a>
+            JEWELS
+          </h1>
         </div>
       </div>
 
-      {/* ===== COPYRIGHT ===== */}
-      <div className="text-center mt-5 lg:mt-10">
-        <p className=" tracking-wide text-xs md:text-sm lg:text-base text-gray-600 ">
+      {/* ── COPYRIGHT ── */}
+      <div className="text-center pt-20">
+        <p className="text-[8px] md:text-xs uppercase tracking-[0.3em] text-gray-500">
           © {new Date().getFullYear()} Hamdam Jewellers. All rights reserved.
         </p>
       </div>

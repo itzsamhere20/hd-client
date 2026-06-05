@@ -11,6 +11,8 @@ import Contact from "./pages/contact";
 import About from "./pages/aboutUs";
 import FAQ from "./pages/faq";
 import MyOrders from "./pages/orders";
+import ProductCategory from "./pages/productCategory";
+import NotFound from "./pages/notFound";
 
 function App() {
   return (
@@ -25,7 +27,11 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/collections" element={<Products />} />
-          <Route path="/collections/:id/:id" element={<ProductDetail />} />
+          <Route
+            path="/collections/:category/:id"
+            element={<ProductDetail />}
+          />
+          <Route path="/collections/:category" element={<ProductCategory />} />
 
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/contact" element={<Contact />} />
@@ -34,6 +40,7 @@ function App() {
           <Route path="/faq" element={<FAQ />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/orders" element={<MyOrders />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />
       </Router>

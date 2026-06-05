@@ -131,20 +131,58 @@ export default function ContactPage() {
 
   /* ── fetch contact info ── */
   useEffect(() => {
-    const fetchContact = async () => {
+    const CONTACT_CACHE = "CONTACT_CACHE";
+
+    const fetchFromAPI = async () => {
       try {
         const res = await api.get("/settings/store/contact");
-        setContact({
+
+        const data = {
           email: res.data?.email || fallbackContact.email,
           phone: res.data?.phone || fallbackContact.phone,
-        });
+        };
+
+        setContact(data);
+
+        localStorage.setItem(
+          CONTACT_CACHE,
+          JSON.stringify({
+            data,
+            time: Date.now(),
+          }),
+        );
       } catch {
-        setContact(fallbackContact);
+        console.log("Contact API failed, keeping cached data");
       } finally {
         setLoading(false);
       }
     };
-    fetchContact();
+
+    const getCachedData = () => {
+      try {
+        const cached = localStorage.getItem(CONTACT_CACHE);
+        if (!cached) return null;
+
+        const parsed = JSON.parse(cached);
+        return parsed?.data || null;
+      } catch {
+        return null;
+      }
+    };
+
+    // 1️⃣ instant UI from cache
+    const cached = getCachedData();
+
+    if (cached) {
+      setContact(cached);
+      setLoading(false);
+    } else {
+      setContact(fallbackContact);
+      setLoading(false);
+    }
+
+    // 2️⃣ background refresh
+    fetchFromAPI();
   }, []);
 
   /* ── input handler ── */

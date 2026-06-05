@@ -263,11 +263,11 @@ export default function Auth() {
 
     // 2s luxury exit animation delay
     setTimeout(() => {
+      window.dispatchEvent(new Event("authUpdated"));
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-
+      localStorage.removeItem(`ORDERS_CACHE_${userId}`);
       setUser(null);
-      window.dispatchEvent(new Event("authUpdated"));
 
       setEmail("");
       setOtp("");

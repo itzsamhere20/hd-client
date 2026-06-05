@@ -1,53 +1,72 @@
-import React, { useEffect, useState } from "react";
-
-const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
+import React, { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Story() {
-  const [scrollY, setScrollY] = useState(0);
+  const navigate = useNavigate();
+  const sectionRef = useRef(null);
   const [hover, setHover] = useState(false);
+  const [offset, setOffset] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", handleScroll);
+    const handleScroll = () => {
+      if (!sectionRef.current) return;
+      const rect = sectionRef.current.getBoundingClientRect();
+      const sectionCenter = rect.top + rect.height / 2;
+      const viewportMid = window.innerHeight / 2;
+      setOffset(viewportMid - sectionCenter);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+  const speed = 0.15;
+  const hamdamX = clamp(offset * speed, -800, 0);
+  const jewellersX = clamp(-offset * speed, 0, 800);
+
   return (
-    <section className="relative py-5 h-auto  overflow-hidden ">
-      {/* ===== TOP TYPOGRAPHY SECTION ===== */}
-      <div className="relative max-w-6xl mx-auto px-6 space-y-10">
-        {/* HAMDAM (LEFT) */}
+    <section className="">
+      {/* ── MOVING TEXT ── */}
+      <div
+        ref={sectionRef}
+        className="relative !w-screen left-1/2 -translate-x-1/2 overflow-hidden py-16"
+      >
         <h1
-          className="text-[120px] md:text-[180px] font-bold uppercase stroke-text leading-none"
+          className="absolute left-0 top-0 font-bold uppercase stroke-text leading-none whitespace-nowrap opacity-60"
           style={{
-            transform: `translateX(${clamp(-500 + scrollY * 0.1, -500, 80)}px)`,
+            fontSize: "clamp(56px, 16vw, 200px)",
+            transform: `translateX(${hamdamX}px)`,
+            willChange: "transform",
           }}
         >
           HAMDAM
         </h1>
 
-        {/* PARAGRAPH  */}
-        <div className="flex justify-center font-cormorant">
-          <p className="max-w-2xl text-center text-gray-800 text-2xl md:text-3xl lg:text-4xl    ">
-            At Hamdam Jewellers, every piece is crafted with precision and
-            passion. We blend tradition with modern elegance to create timeless
-            jewelry.
-          </p>
+        <div className="relative z-10 flex justify-center font-cormorant py-28 md:py-36 px-6">
+          <div className="text-center max-w-2xl space-y-8">
+            <p className="text-[10px] md:text-xs lg:text-sm uppercase tracking-[0.45em] text-primary/90 font-medium">
+              Our Promise
+            </p>
+            <p className="text-gray-700 text-xl md:text-3xl lg:text-4xl leading-[1.6] italic">
+              At Hamdam Jewellers, every piece is crafted with precision and
+              passion. We blend tradition with modern elegance to create
+              timeless jewelry.
+            </p>
+          </div>
         </div>
 
-        {/* JEWELLERS (RIGHT) */}
         <h1
-          className="text-[120px] md:text-[180px] font-bold uppercase stroke-text text-right leading-none"
+          className="absolute right-0 bottom-0 font-bold uppercase stroke-text leading-none whitespace-nowrap text-right opacity-60"
           style={{
-            transform: `translateX(${clamp(500 - scrollY * 0.1, 80, 500)}px)`,
+            fontSize: "clamp(56px, 16vw, 200px)",
+            transform: `translateX(${jewellersX}px)`,
+            willChange: "transform",
           }}
         >
-          JEWELLERS
+          JEWELLERY
         </h1>
       </div>
 
-      {/* ===== SPACING =====
-      <div className="h-40"></div> */}
       {/* ===== BIG E SECTION ===== */}
       <div className="relative flex justify-center items-center  py-10 ">
         {/* ===== SINGLE INTERACTIVE BOX ===== */}
@@ -55,6 +74,7 @@ export default function Story() {
           className="relative inline-flex justify-center over items-center cursor-pointer "
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
+          onClick={() => navigate("/about")}
         >
           {/* OUTLINE E (BACKGROUND) */}
           <span className="text-[150px] md:text-[320px]  font-bold text-white/40 font-luxury leading-none">

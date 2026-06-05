@@ -9,61 +9,71 @@ const Featured = () => {
 
   const navigate = useNavigate();
 
-  const fallbackProducts = [
-    {
-      _id: "1",
-      name: "Gold Ring",
-      price: 25000,
-      discount: 10,
-      type: "925 Silver",
-      image:
-        "https://png.pngtree.com/png-clipart/20240721/original/pngtree-a-jewelry-ring-on-white-background-png-image_15604148.png",
-    },
-    {
-      _id: "2",
-      name: "Diamond Necklace",
-      price: 85000,
-      discount: 0,
-      type: "Gold",
-      image:
-        "https://png.pngtree.com/png-vector/20231026/ourmid/pngtree-chopard-happy-diamonds-necklace-png-image_10368944.png",
-    },
-    {
-      _id: "3",
-      name: "Luxury Bracelet",
-      price: 150000,
-      discount: 15,
-      type: "Rose Gold",
-      image:
-        "https://static.vecteezy.com/system/resources/thumbnails/042/167/713/small/ai-generated-3d-rendering-of-a-hand-gold-chain-on-transparent-background-ai-generated-png.png",
-    },
-    {
-      _id: "4",
-      name: "Pearl Earrings",
-      price: 18000,
-      discount: 5,
-      type: "925 Silver",
-      image:
-        "https://www.paspaley.com/cdn/shop/files/Crescent_Moon_Diamond_Mother_Of_Pearl_and_Keshi_Pearl_Earring_Enhancers_-_White_Gold_F23AE10WKQ05_1500_x_1875_C_2.png",
-    },
-  ];
-
   const getFinalPrice = (price, discount) => {
     if (discount < 0) return price;
     return Math.round(price - (price * discount) / 100);
   };
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const CACHE_KEY = "featured_products_cache";
+
+    const fallbackProducts = [
+      {
+        _id: "1",
+        name: "Gold Ring",
+        price: 25000,
+        discount: 10,
+        type: "925 Silver",
+        image:
+          "https://png.pngtree.com/png-clipart/20240721/original/pngtree-a-jewelry-ring-on-white-background-png-image_15604148.png",
+      },
+      {
+        _id: "2",
+        name: "Diamond Necklace",
+        price: 85000,
+        discount: 0,
+        type: "Gold",
+        image:
+          "https://png.pngtree.com/png-vector/20231026/ourmid/pngtree-chopard-happy-diamonds-necklace-png-image_10368944.png",
+      },
+      {
+        _id: "3",
+        name: "Luxury Bracelet",
+        price: 150000,
+        discount: 15,
+        type: "Rose Gold",
+        image:
+          "https://static.vecteezy.com/system/resources/thumbnails/042/167/713/small/ai-generated-3d-rendering-of-a-hand-gold-chain-on-transparent-background-ai-generated-png.png",
+      },
+      {
+        _id: "4",
+        name: "Pearl Earrings",
+        price: 18000,
+        discount: 5,
+        type: "925 Silver",
+        image:
+          "https://www.paspaley.com/cdn/shop/files/Crescent_Moon_Diamond_Mother_Of_Pearl_and_Keshi_Pearl_Earring_Enhancers_-_White_Gold_F23AE10WKQ05_1500_x_1875_C_2.png",
+      },
+    ];
+
+    const getCachedData = () => {
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (!cached) return null;
+
+        const parsed = JSON.parse(cached);
+        return parsed?.data || null;
+      } catch {
+        return null;
+      }
+    };
+
+    const fetchFromAPI = async () => {
       try {
         const res = await api.get("/products");
         let all = res.data || [];
 
-        if (!Array.isArray(all) || all.length < 4) {
-          setProducts(fallbackProducts);
-          setLoading(false);
-          return;
-        }
+        if (!Array.isArray(all) || all.length < 4) return;
 
         // shuffle
         for (let i = all.length - 1; i > 0; i--) {
@@ -71,24 +81,44 @@ const Featured = () => {
           [all[i], all[j]] = [all[j], all[i]];
         }
 
-        setProducts(
-          all.slice(0, 4).map((p) => ({
-            _id: p._id,
-            name: p.name,
-            price: p.price,
-            discount: p.discount,
-            type: p.type || "925 Silver",
-            image: p.image || p.images?.[0],
-          })),
+        const final = all.slice(0, 4).map((p) => ({
+          _id: p._id,
+          name: p.name,
+          price: p.price,
+          discount: p.discount,
+          type: p.type || "925 Silver",
+          image: p.image || p.images?.[0],
+        }));
+
+        setProducts(final);
+
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({
+            data: final,
+            time: Date.now(),
+          }),
         );
       } catch (err) {
-        setProducts(fallbackProducts);
+        console.log("API failed, keeping cached data or fallback");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    // 1️⃣ INSTANT UI FROM CACHE
+    const cached = getCachedData();
+
+    if (cached && cached.length) {
+      setProducts(cached);
+      setLoading(false);
+    } else {
+      setProducts(fallbackProducts);
+      setLoading(false);
+    }
+
+    // 2️⃣ BACKGROUND REFRESH
+    fetchFromAPI();
   }, []);
 
   const handleClick = (id) => {

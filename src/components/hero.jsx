@@ -15,19 +15,50 @@ const Hero = () => {
   };
 
   useEffect(() => {
-    const fetchLanding = async () => {
+    const CACHE_KEY = "landing_cache";
+
+    const getCachedData = () => {
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (!cached) return null;
+
+        const parsed = JSON.parse(cached);
+        return parsed?.data || null;
+      } catch {
+        return null;
+      }
+    };
+
+    const fetchFromAPI = async () => {
       try {
         const res = await api.get("/settings/store/landing");
+
         setLanding(res.data);
+
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({
+            data: res.data,
+            time: Date.now(),
+          }),
+        );
       } catch (err) {
-        console.error(err);
-        setLanding(null);
+        console.error("API failed, keeping cached data");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchLanding();
+    // 1️⃣ STEP 1: instantly show cached data (NO loading)
+    const cachedData = getCachedData();
+
+    if (cachedData) {
+      setLanding(cachedData);
+      setLoading(false); // important: stop loader immediately
+    }
+
+    // 2️⃣ STEP 2: always refresh from API in background
+    fetchFromAPI();
   }, []);
 
   const data = landing || fallback;

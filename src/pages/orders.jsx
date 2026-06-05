@@ -124,16 +124,70 @@ export default function MyOrders() {
 
   /* FETCH MY ORDERS */
   useEffect(() => {
-    (async () => {
+    const getUser = () => {
+      try {
+        return JSON.parse(localStorage.getItem("user"));
+      } catch {
+        return null;
+      }
+    };
+
+    const user = getUser();
+
+    // 🚫 if no user → clear state and stop
+    if (!user?._id) {
+      setOrders([]);
+      setLoading(false);
+      return;
+    }
+
+    const CACHE_KEY = `ORDERS_CACHE_${user._id}`;
+
+    const getCachedData = () => {
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (!cached) return null;
+
+        const parsed = JSON.parse(cached);
+        return parsed?.data || null;
+      } catch {
+        return null;
+      }
+    };
+
+    const fetchFromAPI = async () => {
       try {
         const res = await api.get("/orders/my");
+
         setOrders(res.data || []);
+
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({
+            data: res.data || [],
+            time: Date.now(),
+          }),
+        );
       } catch (err) {
-        console.error(err);
+        console.log("Orders API failed, using cache");
       } finally {
         setLoading(false);
       }
-    })();
+    };
+
+    // 1️⃣ instant load from cache (per user)
+    const cached = getCachedData();
+
+    if (cached) {
+      setOrders(cached);
+      setLoading(false);
+    } else {
+      setOrders([]);
+      setLoading(false);
+    }
+
+    // 2️⃣ background refresh
+    fetchFromAPI();
   }, []);
 
   /* OPEN CANCEL MODAL */

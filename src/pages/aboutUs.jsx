@@ -7,6 +7,7 @@ export default function AboutUs() {
   const navigate = useNavigate();
   const [active, setActive] = useState("");
   const [scrollY, setScrollY] = useState(0);
+  const [hover, setHover] = useState(false);
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -34,7 +35,23 @@ export default function AboutUs() {
 
   /* ================= FETCH DATA ================= */
   useEffect(() => {
-    const fetchData = async () => {
+    const ABOUT_PRODUCTS_CACHE = "about_products_cache";
+    const ABOUT_CATEGORIES_CACHE = "about_categories_cache";
+    const ABOUT_OWNER_CACHE = "about_owner_cache";
+
+    const getCached = (key) => {
+      try {
+        const cached = localStorage.getItem(key);
+        if (!cached) return null;
+
+        const parsed = JSON.parse(cached);
+        return parsed?.data || null;
+      } catch {
+        return null;
+      }
+    };
+
+    const fetchFromAPI = async () => {
       try {
         const [p, c, o] = await Promise.all([
           api.get("/products"),
@@ -42,17 +59,50 @@ export default function AboutUs() {
           api.get("/settings/store/owner"),
         ]);
 
-        setProducts(p.data || []);
-        setCategories(c.data || []);
-        setOwner(o.data || null);
+        const productsData = p.data || [];
+        const categoriesData = c.data || [];
+        const ownerData = o.data || null;
+
+        setProducts(productsData);
+        setCategories(categoriesData);
+        setOwner(ownerData);
+
+        localStorage.setItem(
+          ABOUT_PRODUCTS_CACHE,
+          JSON.stringify({ data: productsData, time: Date.now() }),
+        );
+
+        localStorage.setItem(
+          ABOUT_CATEGORIES_CACHE,
+          JSON.stringify({ data: categoriesData, time: Date.now() }),
+        );
+
+        localStorage.setItem(
+          ABOUT_OWNER_CACHE,
+          JSON.stringify({ data: ownerData, time: Date.now() }),
+        );
       } catch (err) {
-        console.log(err);
+        console.log("About page API failed, keeping cached data");
       }
     };
 
-    fetchData();
-  }, []);
+    // 1️⃣ INSTANT CACHE LOAD (NO WAIT)
+    const cachedProducts = getCached(ABOUT_PRODUCTS_CACHE);
+    const cachedCategories = getCached(ABOUT_CATEGORIES_CACHE);
+    const cachedOwner = getCached(ABOUT_OWNER_CACHE);
 
+    if (cachedProducts) setProducts(cachedProducts);
+    if (cachedCategories) setCategories(cachedCategories);
+    if (cachedOwner) setOwner(cachedOwner);
+
+    // 2️⃣ BACKUP SAFETY (optional fallback if empty)
+    if (!cachedProducts) setProducts([]);
+    if (!cachedCategories) setCategories([]);
+    if (!cachedOwner) setOwner(null);
+
+    // 3️⃣ BACKGROUND REFRESH
+    fetchFromAPI();
+  }, []);
   /* ================= SET DEFAULT ACTIVE CATEGORY ================= */
   useEffect(() => {
     if (categories.length > 0 && !active) {
@@ -149,6 +199,66 @@ export default function AboutUs() {
           viewport={{ once: true }}
           className="w-full h-[425px] object-contain lg:h-[450px]"
         />
+      </div>
+
+      {/* ===== BIG E SECTION ===== */}
+      <div className="relative flex justify-center items-center py-10 md:py-16">
+        <div
+          className="relative inline-flex justify-center items-center cursor-pointer"
+          onMouseEnter={() => setHover(true)}
+          onMouseLeave={() => setHover(false)}
+          onClick={() => navigate("/collections")}
+        >
+          {/* OUTLINE */}
+          <span className="text-[150px] md:text-[320px] font-bold text-white font-luxury leading-none">
+            E
+          </span>
+
+          {/* FILL */}
+          <span
+            className="absolute text-[150px] md:text-[320px] font-bold text-primary font-luxury leading-none"
+            style={{
+              clipPath: hover ? "inset(0 0 0 0)" : "inset(100% 0 0 0)",
+              transition: "clip-path 1.8s ease",
+            }}
+          >
+            E
+          </span>
+
+          {/* TEXT */}
+          <div className="absolute z-10 text-center font-luxury">
+            <h2
+              className={`
+                text-xl
+                md:text-4xl
+                uppercase
+                tracking-[0.3em]
+                text-gray-900
+                transition-all
+                duration-500
+                ${hover ? "tracking-[0.45em]" : ""}
+              `}
+            >
+              Explore
+            </h2>
+
+            <h2
+              className={`
+                text-xl
+                md:text-4xl
+                uppercase
+                tracking-[0.3em]
+                text-gray-900
+                mt-2
+                transition-all
+                duration-500
+                ${hover ? "scale-105 text-white" : ""}
+              `}
+            >
+              Collection
+            </h2>
+          </div>
+        </div>
       </div>
 
       {/* ================= PRECIOUS METAL ================= */}

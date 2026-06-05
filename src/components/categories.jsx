@@ -1,30 +1,42 @@
 import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import api from "./api";
 
 const Categories = () => {
-  const [hover, setHover] = useState(false);
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // fallback
-  const fallbackCategories = [
-    {
-      name: "Rings",
-      image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e",
-    },
-    {
-      name: "Necklace",
-      image: "https://images.unsplash.com/photo-1611652022419-a9419f74343d",
-    },
-    {
-      name: "Earrings",
-      image:
-        "https://bijoux.vamtam.com/wp-content/uploads/2020/05/iStock-1136336605.jpg",
-    },
-  ];
-
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fallbackCategories = [
+      {
+        name: "Rings",
+        image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e",
+      },
+      {
+        name: "Necklace",
+        image: "https://images.unsplash.com/photo-1611652022419-a9419f74343d",
+      },
+      {
+        name: "Earrings",
+        image:
+          "https://bijoux.vamtam.com/wp-content/uploads/2020/05/iStock-1136336605.jpg",
+      },
+    ];
+
+    const getCachedData = () => {
+      try {
+        const cached = localStorage.getItem("HOME_CAT_CACHE");
+        if (!cached) return null;
+
+        const parsed = JSON.parse(cached);
+        return parsed?.data || null;
+      } catch {
+        return null;
+      }
+    };
+
+    const fetchFromAPI = async () => {
       try {
         const res = await api.get("/categories");
 
@@ -32,29 +44,45 @@ const Categories = () => {
           ? res.data
           : res.data?.categories || [];
 
-        if (data.length > 0) {
-          // shuffle categories
-          const shuffled = [...data].sort(() => Math.random() - 0.5);
+        const shuffled = [...data].sort(() => Math.random() - 0.5).slice(0, 3);
 
-          // take only 3
-          setCategories(shuffled.slice(0, 3));
-        } else {
-          setCategories(fallbackCategories);
-        }
+        const finalData = shuffled.length > 0 ? shuffled : fallbackCategories;
+
+        setCategories(finalData);
+
+        localStorage.setItem(
+          "HOME_CAT_CACHE",
+          JSON.stringify({
+            data: finalData,
+            time: Date.now(),
+          }),
+        );
       } catch (err) {
-        setCategories(fallbackCategories);
+        console.log("API failed, keeping cached categories");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCategories();
+    // 1️⃣ instant UI
+    const cached = getCachedData();
+
+    if (cached && cached.length) {
+      setCategories(cached);
+      setLoading(false);
+    } else {
+      setCategories(fallbackCategories);
+      setLoading(false);
+    }
+
+    // 2️⃣ background refresh
+    fetchFromAPI();
   }, []);
 
   if (loading) {
     return (
       <section className="py-24 flex items-center justify-center">
-        <p className="uppercase tracking-[0.35em] text-[#A68A3C] animate-pulse text-xs md:text-sm">
+        <p className="uppercase tracking-[0.45em] text-primary/60 animate-pulse text-xs">
           Loading Collections...
         </p>
       </section>
@@ -62,210 +90,75 @@ const Categories = () => {
   }
 
   return (
-    <section className="py-16 md:py-24 px-4 md:px-6">
-      {/* ===== HERO TEXT + IMAGE ===== */}
-      <div className="relative flex flex-col items-center justify-center mb-16 md:mb-24">
-        {/* BIG BACKGROUND TEXT */}
-        <h1 className="text-[50px] md:text-[100px] lg:text-9xl font-luxury text-primary/20 tracking-[0.18em] -z-10">
-          COLLECTIONS
-        </h1>
+    <section className="pt-16 pb-40 md:pt-24 md:pb-48 px-4 md:px-6">
+      <div className="max-w-7xl mx-auto">
+        {/* HEADER */}
+        <div className="mb-14 md:mb-20">
+          <p className="text-[10px] uppercase tracking-[0.45em] text-primary/70 font-medium mb-3 text-center">
+            Browse
+          </p>
+          <h2 className="font-luxury text-4xl md:text-6xl lg:text-7xl text-center text-gray-900 leading-[1.0]">
+            Collections
+          </h2>
+          <p className="font-cormorant text-xl md:text-2xl text-gray-600 text-center mt-5 max-w-2xl mx-auto leading-[1.6]">
+            Discover our curated selection of timeless pieces, crafted with
+            precision and passion.
+          </p>
+        </div>
 
-        {/* IMAGE */}
-        <img
-          src="https://bijoux.vamtam.com/wp-content/uploads/2020/11/iStock-1164770941-Hand.png"
-          alt="hand"
-          className="
-            w-[70px]
-            md:w-[150px]
-            lg:w-[180px]
-            object-contain
-            -mt-20
-            md:-mt-28
-            lg:-mt-40
-          "
-        />
-      </div>
-
-      {/* ===== DESCRIPTION ===== */}
-      <div className="max-w-5xl mx-auto text-center mb-12 md:mb-16 px-4">
-        <p className="font-cormorant text-xl md:text-3xl lg:text-5xl text-black leading-[1.25] tracking-[0.03em]">
-          Discover our curated selection of timeless pieces, crafted with
-          precision and passion
-        </p>
-      </div>
-
-      {/* ===== CATEGORY CARDS ===== */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 lg:gap-16 px-2 md:px-5">
-        {categories.map((cat, index) => (
-          <div
-            key={cat._id || index}
-            className="
-              relative
-              group
-              overflow-hidden
-              h-[400px]
-              md:h-[480px]
-              lg:h-[550px]
-              cursor-pointer
-            "
-          >
-            {/* IMAGE */}
-            <img
-              src={cat.image || cat.img}
-              alt={cat.name}
-              className="
-                w-full
-                h-full
-                object-cover
-                transition
-                duration-[1400ms]
-                ease-out
-                group-hover:scale-[1.05]
-              "
-            />
-
-            {/* DARK OVERLAY */}
-            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition duration-700" />
-
-            {/* DEFAULT TEXT */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <h2
-                className="
-                  text-white
-                  text-5xl
-                  md:text-3xl
-                  lg:text-4xl
-                  font-cormorant
-                  font-semibold
-                  tracking-[0.08em]
-                  transition-all
-                  duration-1000
-                  group-hover:opacity-0
-                  group-hover:translate-y-4
-                "
-              >
-                {cat.name}
-              </h2>
-            </div>
-
-            {/* SLIDE UP OVERLAY */}
-            <div
-              className="
-                absolute
-                bottom-0
-                left-0
-                w-full
-                h-0
-                bg-primary/50
-                backdrop-blur-md
-                overflow-hidden
-                transition-all
-                duration-700
-                ease-in-out
-                group-hover:h-full
-                flex
-                items-center
-                justify-center
-              "
+        {/* CARDS */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+          {categories.map((cat, index) => (
+            <motion.div
+              key={cat._id || index}
+              onClick={() => navigate(`/collections/${cat.name.toLowerCase()}`)}
+              className="group relative overflow-hidden cursor-pointer h-[380px] md:h-[460px] lg:h-[540px]"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{
+                duration: 0.8,
+                delay: index * 0.12,
+                ease: [0.22, 1, 0.36, 1],
+              }}
             >
-              {/* BIG LETTER */}
-              <span
-                className="
-                  absolute
-                  text-[150px]
-                  md:text-[120px]
-                  lg:text-[180px]
-                  font-luxury
-                  text-white/10
-                  scale-95
-                  opacity-0
-                  transition-all
-                  duration-1000
-                  delay-200
-                  group-hover:opacity-100
-                  group-hover:text-white/20
-                  group-hover:scale-100
-                "
-              >
-                {cat.name?.charAt(0)}
-              </span>
+              {/* IMAGE */}
+              <img
+                src={cat.image || cat.img}
+                alt={cat.name}
+                className="w-full h-full object-cover transition duration-[1200ms] ease-out group-hover:scale-[1.06]"
+              />
 
-              {/* FULL WORD */}
-              <span
-                className="
-                  relative
-                  text-white
-                  text-5xl
-                  md:text-3xl
-                  lg:text-4xl
-                  tracking-[0.2em]
-                  font-cormorant
-                  font-semibold
-                "
-              >
-                {cat.name}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+              {/* DARK OVERLAY */}
+              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/35 transition duration-700" />
 
-      {/* ===== BIG E SECTION ===== */}
-      <div className="relative flex justify-center items-center py-10 md:py-16">
-        <div
-          className="relative inline-flex justify-center items-center cursor-pointer"
-          onMouseEnter={() => setHover(true)}
-          onMouseLeave={() => setHover(false)}
-        >
-          {/* OUTLINE */}
-          <span className="text-[150px] md:text-[320px] font-bold text-white font-luxury leading-none">
-            E
-          </span>
+              {/* DEFAULT LABEL */}
+              <div className="absolute inset-0 flex flex-col items-center justify-end pb-10">
+                <p className="text-[10px] uppercase tracking-[0.45em] text-white/70 font-medium mb-2 transition-all duration-700 group-hover:opacity-0 group-hover:translate-y-2">
+                  Collection
+                </p>
+                <h3 className="font-luxury text-3xl md:text-4xl text-white tracking-[0.08em] transition-all duration-700 group-hover:opacity-0 group-hover:translate-y-3">
+                  {cat.name}
+                </h3>
+              </div>
 
-          {/* FILL */}
-          <span
-            className="absolute text-[150px] md:text-[320px] font-bold text-primary font-luxury leading-none"
-            style={{
-              clipPath: hover ? "inset(0 0 0 0)" : "inset(100% 0 0 0)",
-              transition: "clip-path 1.8s ease",
-            }}
-          >
-            E
-          </span>
-
-          {/* TEXT */}
-          <div className="absolute z-10 text-center font-luxury">
-            <h2
-              className={`
-                text-xl
-                md:text-4xl
-                uppercase
-                tracking-[0.3em]
-                text-gray-900
-                transition-all
-                duration-500
-                ${hover ? "tracking-[0.45em]" : ""}
-              `}
-            >
-              Explore
-            </h2>
-
-            <h2
-              className={`
-                text-xl
-                md:text-4xl
-                uppercase
-                tracking-[0.3em]
-                text-gray-900
-                mt-2
-                transition-all
-                duration-500
-                ${hover ? "scale-105 text-white" : ""}
-              `}
-            >
-              Collection
-            </h2>
-          </div>
+              {/* HOVER OVERLAY */}
+              <div className="absolute inset-0 bg-primary/50 backdrop-blur-sm flex flex-col items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-all duration-700">
+                <span className="absolute text-[160px] md:text-[180px] font-luxury text-white/10 leading-none select-none">
+                  {cat.name?.charAt(0)}
+                </span>
+                <p className="relative text-[10px] uppercase tracking-[0.45em] text-white/80 font-medium">
+                  Explore
+                </p>
+                <h3 className="relative font-luxury text-3xl md:text-4xl text-white tracking-[0.12em]">
+                  {cat.name}
+                </h3>
+                <span className="relative text-xs uppercase tracking-[0.35em] text-white border-b border-white/60 pb-0.5">
+                  Shop Now
+                </span>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>

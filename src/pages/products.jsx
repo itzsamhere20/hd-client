@@ -22,10 +22,26 @@ const Products = () => {
 
   // ================= FETCH =================
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
+    const PRODUCTS_CACHE = "products_cache";
+    const CATEGORIES_CACHE = "categories_cache";
 
+    const fallbackProducts = {};
+    const fallbackCategories = [];
+
+    const getCached = (key) => {
+      try {
+        const cached = localStorage.getItem(key);
+        if (!cached) return null;
+
+        const parsed = JSON.parse(cached);
+        return parsed?.data || null;
+      } catch {
+        return null;
+      }
+    };
+
+    const fetchFromAPI = async () => {
+      try {
         const [productsRes, categoriesRes] = await Promise.all([
           api.get("/products"),
           api.get("/categories"),
@@ -36,16 +52,13 @@ const Products = () => {
 
           if (!acc[cat]) acc[cat] = [];
 
-          const oldPrice = Number(product.price);
-
           acc[cat].push({
             id: product._id,
             name: product.name,
-            price: Number(
+            price:
               product.price -
-                Math.floor((Number(product.price) * product.discount) / 100),
-            ),
-            oldPrice,
+              Math.floor((Number(product.price) * product.discount) / 100),
+            oldPrice: Number(product.price),
             discount: Number(product.discount || 0),
             img: product.image,
             gender: product.gender || "Unisex",
@@ -59,14 +72,45 @@ const Products = () => {
 
         setProducts(grouped);
         setCategories(categoriesRes.data);
+
+        // 💾 cache (consistent format)
+        localStorage.setItem(
+          PRODUCTS_CACHE,
+          JSON.stringify({
+            data: grouped,
+            time: Date.now(),
+          }),
+        );
+
+        localStorage.setItem(
+          CATEGORIES_CACHE,
+          JSON.stringify({
+            data: categoriesRes.data,
+            time: Date.now(),
+          }),
+        );
       } catch (err) {
-        console.log(err);
+        console.log("API failed, keeping cached data");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    // 1️⃣ INSTANT LOAD FROM CACHE
+    const cachedProducts = getCached(PRODUCTS_CACHE);
+    const cachedCategories = getCached(CATEGORIES_CACHE);
+
+    if (cachedProducts) setProducts(cachedProducts);
+    if (cachedCategories) setCategories(cachedCategories);
+
+    // fallback if nothing exists
+    if (!cachedProducts) setProducts(fallbackProducts);
+    if (!cachedCategories) setCategories(fallbackCategories);
+
+    setLoading(false);
+
+    // 2️⃣ BACKGROUND REFRESH
+    fetchFromAPI();
   }, []);
 
   const getCategoryImage = (categoryName) => {
@@ -409,7 +453,9 @@ const Products = () => {
                       whileHover={{ y: -8 }}
                       onClick={() => {
                         console.log("PRODUCT CLICKED");
-                        navigate(`/collections/${item.category}/${item.id}`);
+                        navigate(
+                          `/collections/${item.category.toLowerCase()}/${item.id}`,
+                        );
                       }}
                       className="group text-center cursor-pointer"
                     >

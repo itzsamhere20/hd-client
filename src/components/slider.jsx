@@ -2,69 +2,101 @@ import React, { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, EffectFade } from "swiper/modules";
 import api from "./api";
+import { useNavigate } from "react-router-dom";
 
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
 
-const fallbackSlides = [
-  {
-    title: "Diamond Elegance",
-    paragraph: "Adjustable . 18Karat Gold . Diamond",
-    mainImage:
-      "https://bijoux.vamtam.com/wp-content/uploads/2020/11/j3378po023200-2-1.jpg",
-    pngImage:
-      "https://bijoux.vamtam.com/wp-content/uploads/2020/11/j3371po033200-3-2.png",
-    color: "#e7d8c3",
-  },
-  {
-    title: "Bridal Luxury",
-    paragraph: "Light in weight . 18Karat Gold . Opal",
-    mainImage:
-      "https://bijoux.vamtam.com/wp-content/uploads/2020/11/j3378po023200-4.jpg",
-    pngImage:
-      "https://bijoux.vamtam.com/wp-content/uploads/2020/11/j3371po033200.png",
-    color: "#dfeaf2",
-  },
-  {
-    title: "Golden Heritage",
-    paragraph: "Timeless design . 18Karat Gold . Pearl",
-    mainImage:
-      "https://bijoux.vamtam.com/wp-content/uploads/2020/11/j3378po023200-3-1.jpg",
-    pngImage:
-      "https://bijoux.vamtam.com/wp-content/uploads/2020/11/j3371po033200-2-1.png",
-    color: "#f3ead9",
-  },
-];
-
 const Slider = () => {
+  const fallbackSlides = [
+    {
+      title: "Diamond Elegance",
+      paragraph: "Adjustable . 18Karat Gold . Diamond",
+      mainImage:
+        "https://bijoux.vamtam.com/wp-content/uploads/2020/11/j3378po023200-2-1.jpg",
+      pngImage:
+        "https://bijoux.vamtam.com/wp-content/uploads/2020/11/j3371po033200-3-2.png",
+      color: "#e7d8c3",
+    },
+    {
+      title: "Bridal Luxury",
+      paragraph: "Light in weight . 18Karat Gold . Opal",
+      mainImage:
+        "https://bijoux.vamtam.com/wp-content/uploads/2020/11/j3378po023200-4.jpg",
+      pngImage:
+        "https://bijoux.vamtam.com/wp-content/uploads/2020/11/j3371po033200.png",
+      color: "#dfeaf2",
+    },
+    {
+      title: "Golden Heritage",
+      paragraph: "Timeless design . 18Karat Gold . Pearl",
+      mainImage:
+        "https://bijoux.vamtam.com/wp-content/uploads/2020/11/j3378po023200-3-1.jpg",
+      pngImage:
+        "https://bijoux.vamtam.com/wp-content/uploads/2020/11/j3371po033200-2-1.png",
+      color: "#f3ead9",
+    },
+  ];
+
+  const navigate = useNavigate();
   const [slides, setSlides] = useState(fallbackSlides);
   const [active, setActive] = useState(0);
   const [swiperRef, setSwiperRef] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSlides = async () => {
+    const getCachedData = () => {
+      try {
+        const cached = localStorage.getItem("SLIDER_CACHE");
+        if (!cached) return null;
+
+        const parsed = JSON.parse(cached);
+        return parsed?.data || null;
+      } catch {
+        return null;
+      }
+    };
+
+    const fetchFromAPI = async () => {
       try {
         const res = await api.get("/settings/store/slider");
 
         const data = res.data?.slides || [];
 
-        if (Array.isArray(data) && data.length > 0) {
-          setSlides(data);
-        } else {
-          setSlides(fallbackSlides);
-        }
+        const finalData =
+          Array.isArray(data) && data.length > 0 ? data : fallbackSlides;
+
+        setSlides(finalData);
+
+        localStorage.setItem(
+          "SLIDER_CACHE",
+          JSON.stringify({
+            data: finalData,
+            time: Date.now(),
+          }),
+        );
       } catch (err) {
-        setSlides(fallbackSlides);
+        console.log("API failed, keeping cached slider data");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSlides();
-  }, []);
+    // 1️⃣ instant load
+    const cached = getCachedData();
 
+    if (cached && cached.length) {
+      setSlides(cached);
+      setLoading(false);
+    } else {
+      setSlides(fallbackSlides);
+      setLoading(false);
+    }
+
+    // 2️⃣ background refresh
+    fetchFromAPI();
+  }, []);
   if (loading) {
     return (
       <section className="py-24 text-center">
@@ -76,7 +108,7 @@ const Slider = () => {
   }
 
   return (
-    <section className="relative">
+    <section className="relative py-24">
       <Swiper
         modules={[Pagination, EffectFade]}
         effect="fade"
@@ -143,7 +175,10 @@ const Slider = () => {
                   {item.paragraph}
                 </p>
 
-                <button className="mt-6 text-xs uppercase tracking-widest border-b border-black hover:text-primary transition">
+                <button
+                  className="mt-6 text-xs uppercase tracking-widest border-b border-black hover:text-primary transition"
+                  onClick={() => navigate("/collections")}
+                >
                   Discover
                 </button>
               </div>

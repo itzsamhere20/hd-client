@@ -80,12 +80,17 @@ const Navbar = () => {
   }, [location.pathname]);
 
   const handleLogout = () => {
+    navigate(-1);
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+
     setUser(null);
     setUserMenuOpen(false);
     window.dispatchEvent(new Event("authUpdated"));
-    navigate("/");
+
+    if (user?.id) {
+      localStorage.removeItem(`ORDERS_CACHE_${user.id}`);
+    }
   };
 
   const isLoggedIn = !!user && !!localStorage.getItem("token");
@@ -99,21 +104,39 @@ const Navbar = () => {
   // ---------- shipping details -------
 
   const [shippingThreshold, setShippingThreshold] = useState(0);
+  const [shippingFee, setShippingFee] = useState(0);
   const [announcementVisible, setAnnouncementVisible] = useState(true);
 
-  const fetchShippingThreshold = async () => {
-    try {
-      const res = await api.get("/settings/shipping");
+  const SHIPPING_CACHE = "SHIPPING_CACHE";
 
-      setShippingThreshold(res.data.freeShippingThreshold);
-      console.log("Shipping threshold:", shippingThreshold);
-    } catch (err) {
-      console.log(err);
-    }
-  };
   useEffect(() => {
-    fetchShippingThreshold();
-  }, [shippingThreshold]);
+    const cached = localStorage.getItem(SHIPPING_CACHE);
+
+    if (cached) {
+      const data = JSON.parse(cached);
+      setShippingThreshold(data.freeShippingThreshold || 0);
+      setShippingFee(data.shippingFee || 0);
+    }
+
+    api
+      .get("/settings/store/shipping")
+      .then((res) => {
+        const threshold = Number(res.data?.freeShippingThreshold || 0);
+        const fee = Number(res.data?.shippingFee || 0);
+
+        setShippingThreshold(threshold);
+        setShippingFee(fee);
+
+        localStorage.setItem(
+          SHIPPING_CACHE,
+          JSON.stringify({
+            freeShippingThreshold: threshold,
+            shippingFee: fee,
+          }),
+        );
+      })
+      .catch(console.error);
+  }, []);
 
   return (
     <>
@@ -121,7 +144,7 @@ const Navbar = () => {
           TOP ANNOUNCEMENT BAR — subtle 1px line
       ════════════════════════════════════════ */}
       <AnimatePresence>
-        {shippingThreshold > 0 && announcementVisible && (
+        {announcementVisible && (
           <motion.div
             initial={{ height: 34, opacity: 1 }}
             animate={{ height: 34, opacity: 1 }}
@@ -138,9 +161,15 @@ const Navbar = () => {
           >
             <div className="h-[34px] flex items-center justify-center relative px-10">
               <span className="text-white/80 text-[10px] tracking-[0.35em] uppercase">
-                Free shipping on orders above PKR{" "}
-                {shippingThreshold.toLocaleString()}
-                &nbsp;·&nbsp; Handcrafted in Pakistan
+                {shippingThreshold === 0 || shippingFee === 0 ? (
+                  <>Free shipping all over Pakistan · Handcrafted in Pakistan</>
+                ) : (
+                  <>
+                    Free shipping on orders above PKR{" "}
+                    {shippingThreshold.toLocaleString()} · Handcrafted in
+                    Pakistan
+                  </>
+                )}
               </span>
 
               <button
@@ -159,18 +188,14 @@ const Navbar = () => {
       ════════════════════════════════════════ */}
       <header
         className={`
-    fixed left-0 w-full z-40 bg-background
+    fixed left-0 w-full z-[99] bg-background
   transition-[top,box-shadow] duration-300 ease-out
     ${
       scrolled
         ? "shadow-[0_1px_0_0_rgba(0,0,0,0.08)]"
         : "border-b border-black/[0.06]"
     }
-    ${
-      shippingThreshold > 0 && announcementVisible
-        ? "md:top-[34px] top-0"
-        : "top-0"
-    }
+    ${announcementVisible ? "md:top-[34px] top-0" : "top-0"}
   `}
       >
         <div className="max-w-7xl mx-auto px-5 md:px-10 h-[68px] flex items-center">
