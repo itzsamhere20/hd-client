@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import api from "../components/api";
 import {
@@ -12,6 +13,7 @@ import {
   ChevronUp,
   MessageCircle,
   X,
+  ArrowLeft,
   AlertTriangle,
 } from "lucide-react";
 
@@ -89,15 +91,33 @@ const STEPS = ["Processing", "Confirmed", "Shipped", "Delivered"];
 export default function MyOrders() {
   // ------------------admin whatsappp-------------------
 
-  const [adminWhatsapp, setAdminWhatsapp] = useState("03324384033");
+  const [adminWhatsapp, setAdminWhatsapp] = useState("923324384033");
+
+  const normalizePakNumber = (number) => {
+    if (!number) return "";
+
+    let cleaned = number.toString().replace(/\D/g, "");
+
+    if (cleaned.startsWith("0")) {
+      cleaned = "92" + cleaned.slice(1);
+    }
+
+    if (!cleaned.startsWith("92")) {
+      cleaned = "92" + cleaned;
+    }
+
+    return cleaned;
+  };
 
   useEffect(() => {
     const fetchContact = async () => {
       try {
         const res = await api.get("/settings/store/contact");
-        console.log("Contact info:", res.data);
-        // adjust this key depending on your backend response
-        setAdminWhatsapp(res.data?.phone);
+
+        const rawPhone = res.data?.phone;
+        const formattedPhone = normalizePakNumber(rawPhone);
+
+        setAdminWhatsapp(formattedPhone);
       } catch (err) {
         console.log("Failed to fetch contact", err);
       }
@@ -213,15 +233,18 @@ export default function MyOrders() {
       }
     })();
 
+    const itemsText = cancelTarget.items
+      ?.map((item) => `- ${item.name} (${item.quantity})`)
+      .join("\n");
+
     const message =
-      `🚫 *Cancel Order Request*\n\n` +
-      `Hi, I would like to cancel my order.\n\n` +
-      `📦 *Order ID:* #${cancelTarget.orderId}\n` +
-      `👤 *Name:* ${user?.name || cancelTarget.customer?.name || "Customer"}\n` +
-      `📞 *Phone:* ${user?.phone || cancelTarget.customer?.phone || "—"}\n\n` +
-      `❓ *Reason:* ${reasonText}\n\n` +
-      `🛍️ *Items:*\n${cancelTarget.items?.map((i) => `• ${i.name} × ${i.quantity}`).join("\n")}\n\n` +
-      `💰 *Total:* PKR ${Number(cancelTarget.totalAmount).toLocaleString()}`;
+      `CANCEL ORDER REQUEST\n\n` +
+      `Order ID: #${cancelTarget.orderId}\n` +
+      `Customer: ${user?.name || cancelTarget.customer?.name || "Customer"}\n` +
+      `Phone: ${user?.phone || cancelTarget.customer?.phone || "-"}\n\n` +
+      `Reason:\n${reasonText}\n\n` +
+      `Items:\n${itemsText}\n\n` +
+      `Total: PKR ${Number(cancelTarget.totalAmount).toLocaleString()}`;
 
     window.open(
       `https://wa.me/${adminWhatsapp}?text=${encodeURIComponent(message)}`,
@@ -248,11 +271,23 @@ export default function MyOrders() {
     <div className="min-h-screen pt-24 md:pt-36 pb-16">
       <div className="max-w-6xl mx-auto px-4">
         {/* HEADER */}
+        {/* BACK + HEADER */}
         <div className="mb-8">
-          <h1 className="font-luxury text-4xl  md:text-5xl lg:text-6xl text-primary tracking-[0.08em]">
+          <motion.button
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-3 text-xs uppercase tracking-[0.25em] text-gray-400 hover:text-black transition mb-6"
+          >
+            <ArrowLeft size={15} strokeWidth={1.5} />
+            Back
+          </motion.button>
+
+          <h1 className="font-luxury text-4xl md:text-5xl lg:text-6xl text-primary tracking-[0.08em]">
             My Orders
           </h1>
-          <p className=" text-[11px] md:text-[13px] tracking-[0.1em] md:tracking-[0.25em] uppercase text-black/40 mt-2">
+
+          <p className="text-[11px] md:text-[13px] tracking-[0.1em] md:tracking-[0.25em] uppercase text-black/40 mt-2">
             Track and manage your purchases
           </p>
         </div>
@@ -269,7 +304,19 @@ export default function MyOrders() {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <motion.div
+            initial="hidden"
+            animate="show"
+            variants={{
+              hidden: {},
+              show: {
+                transition: {
+                  staggerChildren: 0.08,
+                },
+              },
+            }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          >
             {orders.map((order) => {
               const cfg =
                 STATUS_CONFIG[order.orderStatus] || STATUS_CONFIG.PROCESSING;
@@ -287,9 +334,21 @@ export default function MyOrders() {
               );
 
               return (
-                <div
+                <motion.div
                   key={order._id}
-                  className="bg-white/40 backdrop-blur border border-black/10 rounded-lg overflow-hidden  "
+                  variants={{
+                    hidden: { opacity: 0, y: 20, scale: 0.98 },
+                    show: {
+                      opacity: 1,
+                      y: 0,
+                      scale: 1,
+                      transition: {
+                        duration: 0.4,
+                        ease: [0.25, 0.1, 0.25, 1],
+                      },
+                    },
+                  }}
+                  className="bg-white/40 backdrop-blur border border-black/10 rounded-lg overflow-hidden h-fit hover:shadow-lg transition-shadow duration-300"
                 >
                   {/* ── CARD HEADER (always visible, clickable to expand) ── */}
                   <button
@@ -504,10 +563,10 @@ export default function MyOrders() {
                       )}
                     </div>
                   )}
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         )}
       </div>
 

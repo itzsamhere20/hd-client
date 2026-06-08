@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import api from "./api";
 const Footer = () => {
   const marqueeRef = useRef(null);
+
   const [offset, setOffset] = useState(0);
   const [categories, setCategories] = useState([]);
   const fallbackCategories = [
@@ -77,9 +78,15 @@ const Footer = () => {
   }, []);
 
   const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
-  const speed = 0.2;
-  const luxuryX = clamp(offset * speed, -300, 0);
-  const jewelsX = clamp(-offset * speed, 0, 300);
+  const isMobile = window.innerWidth < 768;
+
+  const speed = isMobile ? 0.08 : 0.2;
+  const limit = isMobile ? 60 : 190;
+
+  const value = offset * speed;
+
+  const luxuryX = clamp(value, -limit, 0);
+  const jewelsX = clamp(-value, 0, limit);
 
   // -------categories-----------
 
@@ -145,7 +152,7 @@ const Footer = () => {
         <h2 className="font-luxury text-4xl md:text-6xl text-gray-900 tracking-[0.3em]">
           HAMDAM
         </h2>
-        <p className="text-[12px] uppercase tracking-[0.45em] text-primary/70 font-medium mt-3">
+        <p className="text-[12px] uppercase tracking-[0.85em] text-primary/70 font-medium mt-3">
           Jewellery
         </p>
       </div>
@@ -215,11 +222,11 @@ const Footer = () => {
       {/* ── PARALLAX TEXT + SOCIAL ── */}
       <div ref={marqueeRef} className="overflow-visible py-6">
         {/* LUXURY — full width, slides from left */}
-        <div className="overflow-visible">
+        <div className="overflow-hidden w-full">
           <h1
-            className="font-luxury leading-none select-none text-left block"
+            className="font-luxury leading-none select-none block whitespace-nowrap"
             style={{
-              fontSize: "18vw",
+              fontSize: "clamp(48px, 18vw, 220px)",
               color: "var(--color-primary, #b8860b)",
               opacity: 0.1,
               transform: `translateX(${luxuryX}px)`,
@@ -261,9 +268,9 @@ const Footer = () => {
         {/* JEWELS — full width, slides from right */}
         <div className="overflow-visible">
           <h1
-            className="font-luxury leading-none select-none text-right block"
+            className="font-luxury leading-none select-none text-right block whitespace-nowrap"
             style={{
-              fontSize: "18vw",
+              fontSize: "clamp(48px, 18vw, 220px)",
               color: "var(--color-primary, #b8860b)",
               opacity: 0.1,
               transform: `translateX(${jewelsX}px)`,
@@ -278,7 +285,7 @@ const Footer = () => {
       {/* ── COPYRIGHT ── */}
       <div className="text-center pt-20">
         <p className="text-[8px] md:text-xs uppercase tracking-[0.3em] text-gray-500">
-          © {new Date().getFullYear()} Hamdam Jewellers. All rights reserved.
+          © {new Date().getFullYear()} Hamdam Jewellery. All rights reserved.
         </p>
       </div>
     </footer>

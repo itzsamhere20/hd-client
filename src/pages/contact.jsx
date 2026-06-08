@@ -42,32 +42,43 @@ const formatTime = (ms) => {
 /* ── notification component ── */
 function Notification({ type, title, body, onClose }) {
   useEffect(() => {
-    const t = setTimeout(onClose, 4000);
+    const t = setTimeout(() => {
+      onClose?.();
+    }, 3000);
+
     return () => clearTimeout(t);
-  }, [onClose]);
+  }, []);
 
   const isError = type === "error";
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+      initial={{ opacity: 0, y: 50, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 20, scale: 0.95 }}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      exit={{ opacity: 0, y: 20, scale: 0.97 }}
+      transition={{ duration: 0.4 }}
       onClick={onClose}
-      className="fixed bottom-8 right-6 z-[9999] bg-white border shadow-xl px-8 py-5 cursor-pointer max-w-xs"
+      className="
+        fixed bottom-8 right-6 z-[9999]
+        bg-white border border-[#e6ddd0]
+        shadow-[0_20px_60px_rgba(0,0,0,0.08)]
+        px-8 py-5 min-w-[280px] cursor-pointer
+      "
       style={{
         borderLeftWidth: 4,
         borderLeftColor: isError ? "#dc2626" : "#16a34a",
       }}
     >
       <p
-        className="text-xs uppercase tracking-[0.3em]"
-        style={{ color: isError ? "#dc2626" : "var(--color-primary, #b8860b)" }}
+        className="text-[10px] tracking-[0.45em] uppercase"
+        style={{
+          color: isError ? "#dc2626" : "var(--color-primary, #b8860b)",
+        }}
       >
         {title}
       </p>
-      <h3 className="font-cormorant text-xl mt-1 text-gray-800">{body}</h3>
+
+      <h3 className="font-cormorant text-2xl mt-1 text-gray-800">{body}</h3>
     </motion.div>
   );
 }
@@ -361,7 +372,7 @@ export default function ContactPage() {
       <div className="relative w-full h-[400px] md:h-[600px]">
         <div className="absolute inset-0 flex items-center justify-center">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d537.7970819758706!2d73.76338139872459!3d32.906658084825324!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2s!4v1773402566378!5m2!1sen!2s"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d301.83780364631326!2d73.75398544004955!3d32.90390632685768!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x391f99d60883d963%3A0xd31680ab587bae37!2sHamdum&#39;s%20Collection%20Sarai%20Alamgir!5e0!3m2!1sen!2s!4v1780956389671!5m2!1sen!2s"
             allowFullScreen
             loading="lazy"
             className="w-full h-full"

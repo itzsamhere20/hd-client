@@ -139,8 +139,8 @@ const Featured = () => {
     <section className="max-w-7xl mx-auto py-16 md:py-24 px-4 md:px-6">
       {/* HEADER */}
       <div className="mb-14">
-        <p className="uppercase tracking-[0.45em] text-[11px] text-[#A68A3C] mb-3">
-          Handpicked Selection
+        <p className="text-[10px] md:text-xs lg:text-sm uppercase tracking-[0.45em] text-primary/90 font-medium mb-2 ">
+          HandPicked Sleection
         </p>
 
         <h2 className="text-3xl md:text-6xl font-luxury text-gray-900 leading-[1.05] tracking-[0.1em]">
@@ -202,16 +202,33 @@ const Featured = () => {
               {/* TEXT */}
               <div className="mt-4 space-y-2 text-left">
                 <div className="flex justify-between gap-3">
-                  <h3 className="text-lg md:text-xl font-cormorant text-gray-900 font-semibold tracking-wider">
+                  <h3
+                    className="  font-cormorant
+            text-xs
+            md:text-sm
+            uppercase
+            tracking-[0.18em]
+            text-black line-clamp-2
+            leading-tight"
+                  >
                     {product.name}
                   </h3>
 
-                  <p className="text-sm text-[#A68A3C] whitespace-nowrap">
+                  <p
+                    className="text-[10px] md:text-[11px] text-primary
+        tracking-[0.3em] md:tracking-[0.55em]
+        uppercase whitespace-nowrap
+       "
+                  >
                     PKR {finalPrice.toLocaleString()}
                   </p>
                 </div>
 
-                <button className="text-[11px] uppercase tracking-[0.35em] text-gray-500 border-b border-transparent group-hover:border-black transition pb-[2px]">
+                <button
+                  className="text-[10px] md:text-[11px] text-primary
+        tracking-[0.3em] md:tracking-[0.55em]
+        uppercase border-b border-transparent group-hover:border-black transition pb-[2px]"
+                >
                   {product.type}
                 </button>
               </div>

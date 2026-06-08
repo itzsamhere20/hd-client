@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import api from "./api";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
   const [landing, setLanding] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -166,7 +168,9 @@ const Hero = () => {
 
           <motion.button
             whileTap={{ scale: 0.98 }}
-            className="px-8 py-3 text-sm tracking-[0.3em] uppercase border border-[#C6A962] text-[#A68A3C] relative overflow-hidden group"
+            className="px-8 py-3 text-sm tracking-[0.3em] uppercase border border-[#C6A962] text-[#A68A3C] relative overflow-hidden group
+            "
+            onClick={() => navigate("/collections")}
           >
             <span className="relative z-10 group-hover:text-white transition duration-1000">
               Explore Collection

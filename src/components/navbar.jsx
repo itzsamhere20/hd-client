@@ -24,6 +24,7 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   const navItems = [
     { name: "Home", path: "/" },
@@ -80,17 +81,23 @@ const Navbar = () => {
   }, [location.pathname]);
 
   const handleLogout = () => {
-    navigate(-1);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-
-    setUser(null);
     setUserMenuOpen(false);
-    window.dispatchEvent(new Event("authUpdated"));
+    setMobileOpen(false);
+    setSigningOut(true);
 
-    if (user?.id) {
-      localStorage.removeItem(`ORDERS_CACHE_${user.id}`);
-    }
+    // Clear state at 1s (mid-animation)
+    setTimeout(() => {
+      if (user?.id) localStorage.removeItem(`ORDERS_CACHE_${user.id}`);
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+      window.dispatchEvent(new Event("authUpdated"));
+    }, 1000);
+
+    // Hide overlay after 2s
+    setTimeout(() => {
+      setSigningOut(false);
+    }, 2000);
   };
 
   const isLoggedIn = !!user && !!localStorage.getItem("token");
@@ -508,6 +515,90 @@ const Navbar = () => {
         cartItems={cartItems}
         setCartItems={setCartItems}
       />
+
+      {/* ═══════════════════════════════════════
+          LOGOUT OVERLAY
+      ════════════════════════════════════════ */}
+      <AnimatePresence>
+        {signingOut && (
+          <motion.div
+            key="logout-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+            className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
+            style={{ backgroundColor: "#f8f5f0" }}
+          >
+            {/* Diamond jewel motif */}
+            <motion.div
+              initial={{ opacity: 0, rotate: 45, scale: 0.6 }}
+              animate={{ opacity: 1, rotate: 45, scale: 1 }}
+              transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+              className="w-10 h-10 border border-[#ddd2c2] flex items-center justify-center mb-10"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+                className="w-3 h-3"
+                style={{
+                  backgroundColor: "var(--color-primary, #b08d6a)",
+                  opacity: 0.25,
+                }}
+              />
+            </motion.div>
+
+            {/* Brand label */}
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.45 }}
+              className="text-[10px] uppercase tracking-[0.45em] mb-4"
+              style={{ color: "var(--color-primary, #b08d6a)", opacity: 0.7 }}
+            >
+              Hamdam Jewellery
+            </motion.p>
+
+            {/* Heading */}
+            <motion.h2
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: 0.25,
+                duration: 0.5,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
+              className="font-cormorant uppercase tracking-[0.18em] text-black text-4xl mb-6"
+            >
+              Signing Out
+            </motion.h2>
+
+            {/* Sweeping line */}
+            <motion.div
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{
+                delay: 0.4,
+                duration: 0.7,
+                ease: [0.25, 0.1, 0.25, 1],
+              }}
+              className="h-px w-24 origin-left"
+              style={{ backgroundColor: "#ddd2c2" }}
+            />
+
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.65, duration: 0.5 }}
+              className="text-xs text-gray-400 tracking-[0.2em] uppercase mt-6"
+            >
+              See you soon
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

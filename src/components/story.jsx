@@ -25,7 +25,7 @@ export default function Story() {
   const jewellersX = clamp(-offset * speed, 0, 800);
 
   return (
-    <section className="">
+    <section className="mt-24 lg:mt-0">
       {/* ── MOVING TEXT ── */}
       <div
         ref={sectionRef}
@@ -42,12 +42,12 @@ export default function Story() {
           HAMDAM
         </h1>
 
-        <div className="relative z-10 flex justify-center font-cormorant py-28 md:py-36 px-6">
+        <div className="relative z-10 flex justify-center py-10 md:py-36 px-6">
           <div className="text-center max-w-2xl space-y-8">
-            <p className="text-[10px] md:text-xs lg:text-sm uppercase tracking-[0.45em] text-primary/90 font-medium">
+            <p className="text-[10px] md:text-xs lg:text-sm uppercase tracking-[0.45em] text-primary/90 font-medium ">
               Our Promise
             </p>
-            <p className="text-gray-700 text-xl md:text-3xl lg:text-4xl leading-[1.6] italic">
+            <p className="text-gray-700 text-xl md:text-3xl lg:text-4xl leading-[1.6] italic  font-cormorant">
               At Hamdam Jewellers, every piece is crafted with precision and
               passion. We blend tradition with modern elegance to create
               timeless jewelry.

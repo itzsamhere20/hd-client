@@ -166,9 +166,31 @@ export default function CollectionCategory() {
       {/* ================= PRODUCTS ================= */}
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-32">
-            <h2 className="font-luxury text-4xl">No Products Found</h2>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: [0.25, 0.1, 0.25, 1] }}
+            className="min-h-[500px] flex flex-col items-center justify-center text-center relative overflow-hidden"
+          >
+            <motion.div
+              animate={{ scale: [1, 1.15, 1], opacity: [0.25, 0.4, 0.25] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute w-[280px] h-[280px] bg-[#d6c3a5]/30 blur-3xl"
+            />
+            <motion.div
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="relative z-10 w-3 h-3 bg-[#c89b63] mb-8"
+            />
+            <motion.h2
+              initial={{ opacity: 0, filter: "blur(10px)" }}
+              animate={{ opacity: 1, filter: "blur(0px)" }}
+              transition={{ delay: 0.2, duration: 1 }}
+              className="relative z-10 text-xl md:text-3xl tracking-[0.35em] uppercase text-gray-800 font-light"
+            >
+              No Peices Found
+            </motion.h2>
+          </motion.div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 md:gap-x-8 gap-y-12 lg:gap-24">
             {filteredProducts.map((product) => {

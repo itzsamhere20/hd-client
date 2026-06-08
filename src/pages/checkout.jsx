@@ -50,7 +50,6 @@ export default function Checkout() {
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
-
   const [errors, setErrors] = useState({});
   const [errorModal, setErrorModal] = useState({
     open: false,
@@ -79,25 +78,23 @@ export default function Checkout() {
   const [placingOrder, setPlacingOrder] = useState(false);
 
   /* =========================================================
-     PRODUCTS
+     PRODUCTS  — snapshotted at mount, never re-read from storage
   ========================================================= */
-  const cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-  const products = useMemo(() => {
+  const [products] = useState(() => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
     const source = location.state?.buyNow ? location.state.items : cart;
-
     return source.map((p) => ({
       ...p,
       price: Number(p.price || 0),
       quantity: Number(p.quantity || p.qty || 1),
     }));
-  }, [location.state, cart]);
+  });
+
+  const isCartEmpty = !products || products.length === 0;
   /* =========================================================
      TOTAL
   ========================================================= */
-  const subtotal = useMemo(() => {
-    return products.reduce((acc, p) => acc + p.price * p.quantity, 0);
-  }, [products]);
+  const subtotal = products.reduce((acc, p) => acc + p.price * p.quantity, 0);
 
   const formatPrice = (price) => Number(price || 0).toLocaleString("en-PK");
 
@@ -130,6 +127,29 @@ export default function Checkout() {
   }, []);
 
   /* =========================================================
+     LISTEN FOR EXTERNAL LOGOUT — reset to step 1, don't navigate
+  ========================================================= */
+  useEffect(() => {
+    const onAuthUpdated = () => {
+      if (!localStorage.getItem("token")) {
+        setUser(null);
+        setEmail("");
+        setOtp("");
+        setName("");
+        setPhone("");
+        setAddress("");
+        setCity("");
+        setPostalCode("");
+        setStep(1);
+      }
+    };
+    window.addEventListener("authUpdated", onAuthUpdated);
+    return () => window.removeEventListener("authUpdated", onAuthUpdated);
+  }, []);
+
+  const [resendKey, setResendKey] = useState(0);
+
+  /* =========================================================
      OTP TIMER
   ========================================================= */
   useEffect(() => {
@@ -153,7 +173,7 @@ export default function Checkout() {
     }
 
     return () => clearInterval(interval);
-  }, [step]);
+  }, [step, resendKey]);
 
   /* =========================================================
      EMAIL VALIDATION
@@ -179,10 +199,11 @@ export default function Checkout() {
     try {
       setLoading(true);
 
-      await api.post("/user/send-otp", {
-        email,
-      });
+      await api.post("/user/send-otp", { email });
 
+      setCanResend(false);
+      setResendTimer(30);
+      setResendKey((k) => k + 1);
       setStep(2);
     } catch (err) {
       setEmailError(err.response?.data?.message || "Failed to send OTP");
@@ -345,9 +366,12 @@ export default function Checkout() {
         open: true,
         orderId: res.data.order.orderId,
       });
-      if (!location.state?.buyNow) {
-        localStorage.removeItem("cart");
-        window.dispatchEvent(new Event("cartUpdated"));
+
+      // Clear immediately so reload won't show stale data
+      localStorage.removeItem("cart");
+      window.dispatchEvent(new Event("cartUpdated"));
+      if (location.state?.buyNow) {
+        window.history.replaceState({}, document.title);
       }
     } catch (err) {
       console.log("ORDER ERROR FULL:", err.response?.data || err.message);
@@ -394,7 +418,7 @@ export default function Checkout() {
     try {
       setShippingLoading(true);
 
-      const res = await api.get("/settings/shipping");
+      const res = await api.get("/settings/store/shipping");
 
       setShippingSettings({
         freeShippingThreshold: Number(res.data.freeShippingThreshold),
@@ -518,6 +542,103 @@ export default function Checkout() {
     },
   };
 
+  // ------empty cart modal-----------------
+  if (isCartEmpty && !successModal.open) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        className="min-h-screen flex flex-col items-center justify-center px-4 pb-20 pt-32 relative overflow-hidden"
+      >
+        {/* ambient glow */}
+        <div className="absolute w-[420px] h-[420px] rounded-full bg-primary/5 blur-[100px] pointer-events-none" />
+
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          className="relative z-10 flex flex-col items-center text-center max-w-md"
+        >
+          {/* icon */}
+          <motion.div
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="w-20 h-20 rounded-full bg-primary/8 border border-primary/20 flex items-center justify-center mb-8"
+          >
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.2"
+              className="text-primary"
+            >
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 01-8 0" />
+            </svg>
+          </motion.div>
+
+          {/* label */}
+          <p className="text-[10px] tracking-[0.5em] uppercase text-neutral-400 mb-4">
+            Hamdam Jewellery
+          </p>
+
+          {/* headline */}
+          <h1 className="font-cormorant text-5xl md:text-6xl text-black leading-[1.1] mb-5">
+            Your bag is
+            <br />
+            <span className="italic text-primary">empty</span>
+          </h1>
+
+          {/* divider */}
+          <div className="flex items-center gap-4 w-full mb-5">
+            <div className="flex-1 h-px bg-[#ece7df]" />
+            <span className="text-[10px] tracking-[0.4em] uppercase text-neutral-300">
+              ◆
+            </span>
+            <div className="flex-1 h-px bg-[#ece7df]" />
+          </div>
+
+          {/* sub copy */}
+          <p className="text-neutral-500 text-sm leading-relaxed mb-10">
+            You haven't added anything yet. Explore our curated collections and
+            find a piece crafted for you.
+          </p>
+
+          {/* CTA */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate("/collections")}
+            className="
+            w-full h-14
+            bg-primary text-white
+            uppercase tracking-[0.3em] text-xs
+            flex items-center justify-center gap-3
+            transition-opacity hover:opacity-90
+          "
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M8 12h8M12 8l4 4-4 4" />
+            </svg>
+            Explore Collections
+          </motion.button>
+        </motion.div>
+      </motion.div>
+    );
+  }
+
   /* =========================================================
      STEPPER
   ========================================================= */
@@ -580,15 +701,15 @@ export default function Checkout() {
       initial="hidden"
       animate="visible"
       variants={pageVariants}
-      className="min-h-screen pt-24 md:pt-40 pb-20 px-4 md:px-8"
+      className="min-h-screen pt-24 md:pt-40 pb-20 px-3 md:px-8 overflow-x-hidden w-full"
     >
-      <div className="max-w-7xl mx-auto ">
+      <div className="max-w-7xl mx-auto overflow-x-hidden">
         {/* STEPPER */}
         <Stepper />
 
         <motion.div
           variants={pageVariants}
-          className="grid lg:grid-cols-[1fr_420px] gap-8"
+          className="grid lg:grid-cols-[1fr_420px] gap-4 md:gap-8"
         >
           {/* =========================================================
               LEFT
@@ -603,7 +724,7 @@ export default function Checkout() {
               {step === 1 && (
                 <motion.div
                   variants={cardVariants}
-                  className="relative bg-white rounded-md border border-[#ece7df] p-8 shadow-[0_10px_40px_rgba(0,0,0,0.04)] z-[9]"
+                  className="relative bg-white rounded-md border border-[#ece7df] p-4 md:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.04)] z-[9]"
                 >
                   <div className="flex w-full justify-between">
                     <p className="text-[11px] tracking-[0.45em] uppercase text-neutral-400">
@@ -620,22 +741,47 @@ export default function Checkout() {
                     <input
                       type="email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (emailError) {
+                          if (!e.target.value.trim()) {
+                            setEmailError("Email address is required");
+                          } else if (
+                            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.target.value)
+                          ) {
+                            setEmailError("Please enter a valid email");
+                          } else {
+                            setEmailError("");
+                          }
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (!e.target.value.trim()) {
+                          setEmailError("Email address is required");
+                        } else if (
+                          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.target.value)
+                        ) {
+                          setEmailError("Please enter a valid email");
+                        }
+                      }}
                       placeholder="Email Address"
-                      className="
+                      className={`
                       w-full
                       h-14
                       px-5
                       rounded-md
                       border
-                      border-[#e8e1d7]
                       outline-none
-                      focus:border-primary
-                    "
+                      transition-colors
+                      ${emailError ? "border-red-400 focus:border-red-400 bg-red-50/30" : "border-[#e8e1d7] focus:border-primary"}
+                    `}
                     />
 
                     {emailError && (
-                      <p className="text-red-500 text-sm mt-2">{emailError}</p>
+                      <p className="text-red-500 text-sm mt-2 flex items-center gap-1.5">
+                        <span className="inline-block w-1 h-1 rounded-full bg-red-500 flex-shrink-0" />
+                        {emailError}
+                      </p>
                     )}
 
                     <button
@@ -677,7 +823,7 @@ export default function Checkout() {
               {step === 2 && (
                 <motion.div
                   variants={cardVariants}
-                  className="relative bg-white rounded-md border border-[#ece7df] p-8 shadow-[0_10px_40px_rgba(0,0,0,0.04)]"
+                  className="relative bg-white rounded-md border border-[#ece7df] p-4 md:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.04)]"
                 >
                   <div className="flex items-center gap-3">
                     <ShieldCheck className="text-primary " />
@@ -785,7 +931,7 @@ export default function Checkout() {
               {step === 3 && (
                 <motion.div
                   variants={cardVariants}
-                  className="relative bg-white rounded-md border border-[#ece7df] p-8 shadow-[0_10px_40px_rgba(0,0,0,0.04)]"
+                  className="relative bg-white rounded-md border border-[#ece7df] p-4 md:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.04)]"
                 >
                   <p className="text-[11px] tracking-[0.45em] uppercase text-neutral-400">
                     Delivery Information
@@ -801,46 +947,95 @@ export default function Checkout() {
                       <div className="w-1/2">
                         <input
                           value={name}
-                          onChange={(e) => setName(e.target.value)}
+                          onChange={(e) => {
+                            setName(e.target.value);
+                            if (errors.name) {
+                              setErrors((prev) => ({
+                                ...prev,
+                                name: e.target.value.trim()
+                                  ? ""
+                                  : "Name cannot be empty",
+                              }));
+                            }
+                          }}
+                          onBlur={(e) => {
+                            if (!e.target.value.trim())
+                              setErrors((prev) => ({
+                                ...prev,
+                                name: "Name cannot be empty",
+                              }));
+                          }}
                           placeholder="Full Name"
-                          className="
+                          className={`
                         w-full
                         h-14
                         px-5
                         rounded-md
                         border
-                        border-[#ece7df]
                         outline-none
-                        focus:border-primary
-                      "
+                        transition-colors
+                        ${errors.name ? "border-red-400 focus:border-red-400 bg-red-50/30" : "border-[#ece7df] focus:border-primary"}
+                      `}
                         />
+                        {errors.name && (
+                          <p className="text-red-500 text-xs mt-2 flex items-center gap-1.5">
+                            <span className="inline-block w-1 h-1 rounded-full bg-red-500 flex-shrink-0" />
+                            {errors.name}
+                          </p>
+                        )}
                       </div>
 
-                      {errors.name && (
-                        <p className="text-red-500 text-xs mt-2">
-                          {errors.name}
-                        </p>
-                      )}
                       <div className="w-1/2">
                         <input
-                          type="number"
                           value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "");
+                            setPhone(val);
+                            if (errors.phone) {
+                              if (!val)
+                                setErrors((prev) => ({
+                                  ...prev,
+                                  phone: "Phone number is required",
+                                }));
+                              else if (!/^03\d{9}$/.test(val))
+                                setErrors((prev) => ({
+                                  ...prev,
+                                  phone: "Must start with 03 and be 11 digits",
+                                }));
+                              else
+                                setErrors((prev) => ({ ...prev, phone: "" }));
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const val = e.target.value;
+                            if (!val.trim())
+                              setErrors((prev) => ({
+                                ...prev,
+                                phone: "Phone number is required",
+                              }));
+                            else if (!/^03\d{9}$/.test(val))
+                              setErrors((prev) => ({
+                                ...prev,
+                                phone: "Must start with 03 and be 11 digits",
+                              }));
+                          }}
                           placeholder="03XXXXXXXXX"
-                          className="
+                          maxLength={11}
+                          className={`
                         w-full
                         h-14
                         px-5
                         rounded-md
                         border
-                        border-[#ece7df]
                         outline-none
-                        focus:border-primary
-                      "
+                        transition-colors
+                        ${errors.phone ? "border-red-400 focus:border-red-400 bg-red-50/30" : "border-[#ece7df] focus:border-primary"}
+                      `}
                         />
 
                         {errors.phone && (
-                          <p className="text-red-500 text-xs mt-2">
+                          <p className="text-red-500 text-xs mt-2 flex items-center gap-1.5">
+                            <span className="inline-block w-1 h-1 rounded-full bg-red-500 flex-shrink-0" />
                             {errors.phone}
                           </p>
                         )}
@@ -852,22 +1047,39 @@ export default function Checkout() {
                       <div className="w-2/3">
                         <input
                           value={address}
-                          onChange={(e) => setAddress(e.target.value)}
+                          onChange={(e) => {
+                            setAddress(e.target.value);
+                            if (errors.address)
+                              setErrors((prev) => ({
+                                ...prev,
+                                address: e.target.value.trim()
+                                  ? ""
+                                  : "Address cannot be empty",
+                              }));
+                          }}
+                          onBlur={(e) => {
+                            if (!e.target.value.trim())
+                              setErrors((prev) => ({
+                                ...prev,
+                                address: "Address cannot be empty",
+                              }));
+                          }}
                           placeholder="Address"
-                          className="
+                          className={`
                         w-full
                         h-14
                         px-5
                         rounded-md
                         border
-                        border-[#ece7df]
                         outline-none
-                        focus:border-primary
-                      "
+                        transition-colors
+                        ${errors.address ? "border-red-400 focus:border-red-400 bg-red-50/30" : "border-[#ece7df] focus:border-primary"}
+                      `}
                         />
 
                         {errors.address && (
-                          <p className="text-red-500 text-xs mt-2">
+                          <p className="text-red-500 text-xs mt-2 flex items-center gap-1.5">
+                            <span className="inline-block w-1 h-1 rounded-full bg-red-500 flex-shrink-0" />
                             {errors.address}
                           </p>
                         )}
@@ -876,22 +1088,39 @@ export default function Checkout() {
                       <div className="w-1/3">
                         <input
                           value={city}
-                          onChange={(e) => setCity(e.target.value)}
+                          onChange={(e) => {
+                            setCity(e.target.value);
+                            if (errors.city)
+                              setErrors((prev) => ({
+                                ...prev,
+                                city: e.target.value.trim()
+                                  ? ""
+                                  : "City cannot be empty",
+                              }));
+                          }}
+                          onBlur={(e) => {
+                            if (!e.target.value.trim())
+                              setErrors((prev) => ({
+                                ...prev,
+                                city: "City cannot be empty",
+                              }));
+                          }}
                           placeholder="City"
-                          className="
+                          className={`
                         w-full
                         h-14
                         px-5
                         rounded-md
                         border
-                        border-[#ece7df]
                         outline-none
-                        focus:border-primary
-                      "
+                        transition-colors
+                        ${errors.city ? "border-red-400 focus:border-red-400 bg-red-50/30" : "border-[#ece7df] focus:border-primary"}
+                      `}
                         />
 
                         {errors.city && (
-                          <p className="text-red-500 text-xs mt-2">
+                          <p className="text-red-500 text-xs mt-2 flex items-center gap-1.5">
+                            <span className="inline-block w-1 h-1 rounded-full bg-red-500 flex-shrink-0" />
                             {errors.city}
                           </p>
                         )}
@@ -954,7 +1183,7 @@ export default function Checkout() {
                   {/* PROFILE */}
                   <motion.div
                     variants={cardVariants}
-                    className="relative bg-white rounded-md border border-[#ece7df] p-8 shadow-[0_10px_40px_rgba(0,0,0,0.04)]"
+                    className="relative bg-white rounded-md border border-[#ece7df] p-4 md:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.04)]"
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -988,13 +1217,12 @@ export default function Checkout() {
                       </button>
                     </div>
 
-                    <div className="mt-10 grid md:grid-cols-2 gap-8">
+                    <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div>
-                        <p className="text-xs tracking-[0.25em] uppercase text-neutral-400 ">
+                        <p className="text-xs tracking-[0.25em] uppercase text-neutral-400">
                           Full Name
                         </p>
-
-                        <p className="mt-2 text-[15px] capitalize">
+                        <p className="mt-2 text-[15px] capitalize break-words">
                           {user?.name}
                         </p>
                       </div>
@@ -1003,8 +1231,7 @@ export default function Checkout() {
                         <p className="text-xs tracking-[0.25em] uppercase text-neutral-400">
                           Email
                         </p>
-
-                        <p className="mt-2 text-[15px]">
+                        <p className="mt-2 text-[15px] break-all">
                           {maskEmail(user?.email)}
                         </p>
                       </div>
@@ -1013,16 +1240,16 @@ export default function Checkout() {
                         <p className="text-xs tracking-[0.25em] uppercase text-neutral-400">
                           Mobile Number
                         </p>
-
-                        <p className="mt-2 text-[15px]">{user?.phone}</p>
+                        <p className="mt-2 text-[15px] break-words">
+                          {user?.phone}
+                        </p>
                       </div>
 
                       <div>
                         <p className="text-xs tracking-[0.25em] uppercase text-neutral-400">
                           Address
                         </p>
-
-                        <p className="mt-2 text-[15px] leading-relaxed">
+                        <p className="mt-2 text-[15px] leading-relaxed break-words">
                           {`${user?.address}, ${user?.city}${postalCode ? `, ${postalCode}` : ""}`}
                         </p>
                       </div>
@@ -1032,7 +1259,7 @@ export default function Checkout() {
                   {/* PAYMENT */}
                   <motion.div
                     variants={cardVariants}
-                    className="relative bg-white rounded-md border border-[#ece7df] p-8 shadow-[0_10px_40px_rgba(0,0,0,0.04)]"
+                    className="relative bg-white rounded-md border border-[#ece7df] p-4 md:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.04)]"
                   >
                     <div className="flex items-center gap-3">
                       <Wallet className="text-primary" />
@@ -1110,33 +1337,37 @@ export default function Checkout() {
                           {paymentMethod === "BANK" && (
                             <div className="mt-5 border-t pt-5">
                               <div className="space-y-3 text-sm">
-                                <div className="flex justify-between">
-                                  <span className="text-neutral-500">Bank</span>
-
-                                  <span>{bankDetails.bankName}</span>
+                                <div className="flex justify-between gap-4">
+                                  <span className="text-neutral-500 shrink-0">
+                                    Bank
+                                  </span>
+                                  <span className="text-right break-all">
+                                    {bankDetails.bankName}
+                                  </span>
                                 </div>
-
-                                <div className="flex justify-between">
-                                  <span className="text-neutral-500">
+                                <div className="flex justify-between gap-4">
+                                  <span className="text-neutral-500 shrink-0">
                                     Account Title
                                   </span>
-
-                                  <span>{bankDetails.accountTitle}</span>
-                                </div>
-
-                                <div className="flex justify-between">
-                                  <span className="text-neutral-500">
-                                    Account Number
+                                  <span className="text-right break-all">
+                                    {bankDetails.accountTitle}
                                   </span>
-
-                                  <span>{bankDetails.accountNumber}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                  <span className="text-neutral-500">
+                                <div className="flex justify-between gap-4">
+                                  <span className="text-neutral-500 shrink-0">
+                                    Account No.
+                                  </span>
+                                  <span className="text-right break-all">
+                                    {bankDetails.accountNumber}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between gap-4">
+                                  <span className="text-neutral-500 shrink-0">
                                     WhatsApp
                                   </span>
-
-                                  <span>{bankDetails.whatsapp}</span>
+                                  <span className="text-right break-all">
+                                    {bankDetails.whatsapp}
+                                  </span>
                                 </div>
                               </div>
 
@@ -1164,7 +1395,7 @@ export default function Checkout() {
               className="sticky top-24 bg-white rounded-md border border-[#ece7df] overflow-hidden shadow-[0_10px_40px_rgba(0,0,0,0.04)]"
             >
               {/* HEADER */}
-              <div className="px-7 pt-7 pb-5 border-b border-dashed">
+              <div className="px-4 md:px-7 pt-6 pb-5 border-b border-dashed">
                 <p className="text-[11px] tracking-[0.45em] uppercase text-neutral-400">
                   Order Summary
                 </p>
@@ -1218,43 +1449,37 @@ export default function Checkout() {
               </div>
 
               {/* PRODUCTS */}
-              <div className="px-7 py-6 space-y-6">
+              <div className="px-4 md:px-7 py-6 space-y-5">
                 {products.map((p, i) => (
                   <motion.div
                     key={i}
                     variants={itemVariants}
                     initial="hidden"
                     animate="visible"
-                    className="flex justify-between gap-4"
+                    className="flex items-start justify-between gap-3"
                   >
                     {/* LEFT SIDE */}
-                    <div className="flex gap-4 min-w-0">
+                    <div className="flex gap-3 min-w-0 flex-1">
                       {/* IMAGE */}
-                      <div className="w-14 h-14 rounded-md overflow-hidden border border-[#ece7df] flex-shrink-0">
+                      <div className="w-12 h-12 rounded-md overflow-hidden border border-[#ece7df] flex-shrink-0">
                         <img
                           src={p.image || p.images?.[0]}
                           alt={p.name}
                           className="w-full h-full object-contain"
                         />
                       </div>
-
                       {/* INFO */}
-                      <div className="min-w-0">
-                        <p className="text-[15px] text-neutral-900 truncate">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[14px] text-neutral-900 truncate">
                           {p.name}
                         </p>
-
-                        <p className="text-[11px] uppercase tracking-[0.25em] text-neutral-400 mt-1 flex gap-2">
-                          <span className={`${p.size ? "block" : "hidden"}`}>
-                            Size: {p.size}
-                          </span>
-                          x{p.quantity}
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-neutral-400 mt-1">
+                          {p.size ? `Size: ${p.size} · ` : ""}x{p.quantity}
                         </p>
                       </div>
                     </div>
-
                     {/* PRICE */}
-                    <p className="text-[15px] font-medium text-neutral-900 whitespace-nowrap">
+                    <p className="text-[14px] font-medium text-neutral-900 shrink-0">
                       PKR {formatPrice(p.price * p.quantity)}
                     </p>
                   </motion.div>
@@ -1262,7 +1487,7 @@ export default function Checkout() {
               </div>
 
               {/* TOTALS */}
-              <div className="px-7 py-6 border-t border-dashed">
+              <div className="px-4 md:px-7 py-6 border-t border-dashed">
                 {/* SUBTOTAL */}
                 <div className="flex items-center justify-between">
                   <p className="text-[14px] text-neutral-500">Subtotal</p>
@@ -1367,69 +1592,154 @@ export default function Checkout() {
 
             {/* BODY */}
             <div className="p-7 space-y-4">
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Full Name"
-                className="
-                  w-full
-                  h-14
-                  px-5
-                  rounded-md
-                  border
-                  border-[#ece7df]
-                  outline-none
-                  focus:border-primary
-                "
-              />
+              <div>
+                <input
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (errors.name)
+                      setErrors((prev) => ({
+                        ...prev,
+                        name: e.target.value.trim()
+                          ? ""
+                          : "Name cannot be empty",
+                      }));
+                  }}
+                  onBlur={(e) => {
+                    if (!e.target.value.trim())
+                      setErrors((prev) => ({
+                        ...prev,
+                        name: "Name cannot be empty",
+                      }));
+                  }}
+                  placeholder="Full Name"
+                  className={`
+                  w-full h-14 px-5 rounded-md border outline-none transition-colors
+                  ${errors.name ? "border-red-400 focus:border-red-400 bg-red-50/30" : "border-[#ece7df] focus:border-primary"}
+                `}
+                />
+                {errors.name && (
+                  <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1.5">
+                    <span className="inline-block w-1 h-1 rounded-full bg-red-500 flex-shrink-0" />
+                    {errors.name}
+                  </p>
+                )}
+              </div>
 
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="03XXXXXXXXX"
-                className="
-                  w-full
-                  h-14
-                  px-5
-                  rounded-md
-                  border
-                  border-[#ece7df]
-                  outline-none
-                  focus:border-primary
-                "
-              />
+              <div>
+                <input
+                  value={phone}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "");
+                    setPhone(val);
+                    if (errors.phone) {
+                      if (!val)
+                        setErrors((prev) => ({
+                          ...prev,
+                          phone: "Phone number is required",
+                        }));
+                      else if (!/^03\d{9}$/.test(val))
+                        setErrors((prev) => ({
+                          ...prev,
+                          phone: "Must start with 03 and be 11 digits",
+                        }));
+                      else setErrors((prev) => ({ ...prev, phone: "" }));
+                    }
+                  }}
+                  onBlur={(e) => {
+                    if (!e.target.value.trim())
+                      setErrors((prev) => ({
+                        ...prev,
+                        phone: "Phone number is required",
+                      }));
+                    else if (!/^03\d{9}$/.test(e.target.value))
+                      setErrors((prev) => ({
+                        ...prev,
+                        phone: "Must start with 03 and be 11 digits",
+                      }));
+                  }}
+                  placeholder="03XXXXXXXXX"
+                  maxLength={11}
+                  className={`
+                  w-full h-14 px-5 rounded-md border outline-none transition-colors
+                  ${errors.phone ? "border-red-400 focus:border-red-400 bg-red-50/30" : "border-[#ece7df] focus:border-primary"}
+                `}
+                />
+                {errors.phone && (
+                  <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1.5">
+                    <span className="inline-block w-1 h-1 rounded-full bg-red-500 flex-shrink-0" />
+                    {errors.phone}
+                  </p>
+                )}
+              </div>
 
-              <input
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Address"
-                className="
-                  w-full
-                  h-14
-                  px-5
-                  rounded-md
-                  border
-                  border-[#ece7df]
-                  outline-none
-                  focus:border-primary
-                "
-              />
+              <div>
+                <input
+                  value={address}
+                  onChange={(e) => {
+                    setAddress(e.target.value);
+                    if (errors.address)
+                      setErrors((prev) => ({
+                        ...prev,
+                        address: e.target.value.trim()
+                          ? ""
+                          : "Address cannot be empty",
+                      }));
+                  }}
+                  onBlur={(e) => {
+                    if (!e.target.value.trim())
+                      setErrors((prev) => ({
+                        ...prev,
+                        address: "Address cannot be empty",
+                      }));
+                  }}
+                  placeholder="Address"
+                  className={`
+                  w-full h-14 px-5 rounded-md border outline-none transition-colors
+                  ${errors.address ? "border-red-400 focus:border-red-400 bg-red-50/30" : "border-[#ece7df] focus:border-primary"}
+                `}
+                />
+                {errors.address && (
+                  <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1.5">
+                    <span className="inline-block w-1 h-1 rounded-full bg-red-500 flex-shrink-0" />
+                    {errors.address}
+                  </p>
+                )}
+              </div>
 
-              <input
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="City"
-                className="
-                  w-full
-                  h-14
-                  px-5
-                  rounded-md
-                  border
-                  border-[#ece7df]
-                  outline-none
-                  focus:border-primary
-                "
-              />
+              <div>
+                <input
+                  value={city}
+                  onChange={(e) => {
+                    setCity(e.target.value);
+                    if (errors.city)
+                      setErrors((prev) => ({
+                        ...prev,
+                        city: e.target.value.trim()
+                          ? ""
+                          : "City cannot be empty",
+                      }));
+                  }}
+                  onBlur={(e) => {
+                    if (!e.target.value.trim())
+                      setErrors((prev) => ({
+                        ...prev,
+                        city: "City cannot be empty",
+                      }));
+                  }}
+                  placeholder="City"
+                  className={`
+                  w-full h-14 px-5 rounded-md border outline-none transition-colors
+                  ${errors.city ? "border-red-400 focus:border-red-400 bg-red-50/30" : "border-[#ece7df] focus:border-primary"}
+                `}
+                />
+                {errors.city && (
+                  <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1.5">
+                    <span className="inline-block w-1 h-1 rounded-full bg-red-500 flex-shrink-0" />
+                    {errors.city}
+                  </p>
+                )}
+              </div>
 
               <input
                 value={postalCode}
@@ -1491,6 +1801,9 @@ export default function Checkout() {
           </div>
         </div>
       )}
+
+      {/* -------------Empty cart Modal-----------------
+       */}
 
       {/* ------------------ error modal --------------- */}
       {errorModal.open && (
@@ -1646,42 +1959,20 @@ export default function Checkout() {
             <div className="p-6 border-t border-[#f1ece5] flex gap-3">
               <button
                 onClick={() => {
-                  setSuccessModal({
-                    open: false,
-                    orderId: "",
-                  });
-
+                  setSuccessModal({ open: false, orderId: "" });
                   navigate("/orders");
                 }}
-                className="
-            flex-1
-            h-12
-            border
-            border-[#ece7df]
-          "
+                className="flex-1 h-12 border border-[#ece7df]"
               >
                 My Orders
               </button>
 
               <button
                 onClick={() => {
-                  setSuccessModal({
-                    open: false,
-                    orderId: "",
-                  });
-
+                  setSuccessModal({ open: false, orderId: "" });
                   navigate("/");
                 }}
-                className="
-            flex-1
-            h-12
-            bg-primary
-            text-white
-            flex
-            items-center
-            justify-center
-            gap-2
-          "
+                className="flex-1 h-12 bg-primary text-white flex items-center justify-center gap-2"
               >
                 <CheckCircle2 size={16} />
                 Continue

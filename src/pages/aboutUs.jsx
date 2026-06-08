@@ -138,7 +138,7 @@ export default function AboutUs() {
       {/* ================= HERO ================= */}
       <div className="relative max-w-7xl mx-auto px-6 pt-20 pb-12 md:pb-20  lg:pb-28 ">
         {/* HEADING — centred on mobile, left on md+ */}
-        <h1 className="text-center md:text-left text-5xl md:text-6xl lg:text-7xl font-luxury text-gray-900 z-20 leading-none mb-8 md:mb-0 md:absolute  md:left-6  md:top-1/2">
+        <h1 className=" md:text-left text-5xl md:text-6xl lg:text-7xl font-luxury text-gray-900 z-20 leading-none mb-8 md:mb-0 md:absolute  md:left-6  md:top-1/2">
           Our Story
         </h1>
 
