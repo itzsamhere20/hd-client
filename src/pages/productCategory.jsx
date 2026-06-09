@@ -148,6 +148,7 @@ export default function CollectionCategory() {
                 }}
               />
               <motion.img
+                loading="lazy"
                 src={categoryData?.image}
                 alt={categoryData?.name}
                 initial={{ clipPath: "inset(0 100% 0 0)" }}
@@ -240,6 +241,7 @@ export default function CollectionCategory() {
                     )}
 
                     <img
+                      loading="lazy"
                       src={product.image}
                       alt={product.name}
                       className="h-[100%] object-contain transition duration-700 group-hover:scale-105"

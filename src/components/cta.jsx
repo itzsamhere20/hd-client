@@ -111,6 +111,7 @@ const CTASection = () => {
           {/* IMAGE */}
           <div className="w-full md:w-1/2 flex justify-start">
             <motion.img
+              loading="lazy"
               src={content.leftImage}
               alt={content.leftTitle}
               initial={{ clipPath: "inset(0 100% 0 0)" }}
@@ -171,6 +172,7 @@ const CTASection = () => {
           {/* IMAGE */}
           <div className="w-full md:w-1/2 flex justify-end">
             <motion.img
+              loading="lazy"
               src={content.rightImage}
               alt={content.rightTitle}
               initial={{ clipPath: "inset(0 0 0 100%)" }}

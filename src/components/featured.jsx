@@ -185,6 +185,7 @@ const Featured = () => {
                 />
 
                 <motion.img
+                  loading="lazy"
                   src={product.image}
                   alt={product.name}
                   className="relative z-10 max-h-[78%] object-contain group-hover:scale-[1.05] transition duration-700"

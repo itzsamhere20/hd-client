@@ -143,6 +143,7 @@ const Slider = () => {
               {/* IMAGE */}
               <div className="md:w-1/2 flex justify-center relative z-10">
                 <img
+                  loading="lazy"
                   src={item.mainImage}
                   alt={item.title}
                   className="w-[200px] md:w-[270px] lg:w-[400px] object-cover -translate-y-20 md:translate-y-0"
@@ -153,6 +154,7 @@ const Slider = () => {
               <div className="md:w-1/2 relative text-center md:text-center flex flex-col items-center justify-center md:items-start mt-10 md:mt-0 group z-10">
                 {/* PNG OVERLAY */}
                 <img
+                  loading="lazy"
                   src={item.pngImage}
                   alt="decor"
                   className="

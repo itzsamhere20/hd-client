@@ -145,6 +145,7 @@ export default function AboutUs() {
         {/* STORY IMAGE */}
         <div className="flex md:justify-end">
           <motion.img
+            loading="lazy"
             src={
               owner?.storyImage ||
               "https://t4.ftcdn.net/jpg/05/36/09/73/360_F_536097363_JgtB1decJ8ahW5u35bDzHwWkQuDe7RVd.jpg"
@@ -162,6 +163,7 @@ export default function AboutUs() {
       {/* ================= ABOUT GRID ================= */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-20 px-6 py-5 md:py-10">
         <motion.img
+          loading="lazy"
           src={
             owner?.aboutLeftImage ||
             "https://images.unsplash.com/photo-1617038220319-276d3cfab638"
@@ -188,6 +190,7 @@ export default function AboutUs() {
         </div>
 
         <motion.img
+          loading="lazy"
           src={
             owner?.aboutrightImage ||
             "https://images.unsplash.com/photo-1611652022419-a9419f74343d"
@@ -280,6 +283,7 @@ export default function AboutUs() {
           >
             <div className=" h-[300px] flex items-center justify-center overflow-hidden">
               <img
+                loading="lazy"
                 src={
                   owner?.ourValueImage ||
                   "https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d"
@@ -309,6 +313,7 @@ export default function AboutUs() {
             className="flex justify-center md:mt-20"
           >
             <img
+              loading="lazy"
               src={
                 owner?.preciousCenterImage ||
                 "https://i.pinimg.com/736x/21/4e/51/214e51fb17c1097fbca6cd89ae5030d2.jpg"
@@ -337,6 +342,7 @@ export default function AboutUs() {
             </p>
             <div className=" h-[300px] flex items-center justify-center overflow-hidden">
               <img
+                loading="lazy"
                 src={
                   owner?.philosophyImage ||
                   "https://images.unsplash.com/photo-1605100804763-247f67b3557e"
@@ -390,6 +396,7 @@ export default function AboutUs() {
       {/* ================= ORIGINS ================= */}
       <div className="max-w-7xl mx-auto px-6 py-20 md:py-28 flex flex-col md:flex-row items-center gap-10 md:gap-0 justify-end relative">
         <motion.img
+          loading="lazy"
           src={
             owner?.image ||
             "https://images.unsplash.com/photo-1494790108377-be9c29b29330"
@@ -473,6 +480,7 @@ export default function AboutUs() {
               >
                 <div className="relative bg-white flex items-center justify-center h-[200px] sm:h-[240px] md:h-[350px] lg:h-[380px] overflow-hidden">
                   <img
+                    loading="lazy"
                     src={item.image}
                     alt={item.name}
                     className="h-[100%] object-contain transition duration-700 group-hover:scale-105"

@@ -412,6 +412,7 @@ const Products = () => {
                   }}
                 />
                 <motion.img
+                  loading="lazy"
                   src={categoryImage}
                   alt={category}
                   initial={{ clipPath: "inset(0 100% 0 0)" }}
@@ -477,6 +478,7 @@ const Products = () => {
                         )}
 
                         <img
+                          loading="lazy"
                           src={item.img}
                           alt={item.name}
                           className="h-[100%] object-contain transition duration-700 group-hover:scale-105"

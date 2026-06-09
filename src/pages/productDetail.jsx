@@ -232,6 +232,7 @@ const ProductDetail = () => {
             )}
 
             <motion.img
+              loading="lazy"
               src={product.image}
               alt={product.name}
               className="relative z-0 h-[88%] w-[88%] object-contain transition duration-700 hover:scale-105"

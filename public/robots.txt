@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://hamdamcollection.com/sitemap.xml
+Sitemap: https://hamdamcollections.com/sitemap.xml
