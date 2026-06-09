@@ -5,7 +5,8 @@ import { ArrowLeft } from "lucide-react";
 import api from "../components/api";
 
 const ProductDetail = () => {
-  const { id } = useParams();
+  const { productSlug } = useParams();
+  const id = productSlug.split("-").pop();
   const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);

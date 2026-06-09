@@ -154,7 +154,7 @@ export default function MyOrders() {
 
     const user = getUser();
 
-    // 🚫 if no user → clear state and stop
+    //  if no user → clear state and stop
     if (!user?._id) {
       setOrders([]);
       setLoading(false);
@@ -200,9 +200,6 @@ export default function MyOrders() {
 
     if (cached) {
       setOrders(cached);
-      setLoading(false);
-    } else {
-      setOrders([]);
       setLoading(false);
     }
 
@@ -256,13 +253,8 @@ export default function MyOrders() {
   /* LOADING */
   if (loading) {
     return (
-      <div className="min-h-screen pt-24 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 rounded-full border-2 border-black border-t-transparent animate-spin" />
-          <p className="font-cormorant text-xl text-gray-500 tracking-widest">
-            Loading your orders...
-          </p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-[#f8f5f0]">
+        <div className="w-14 h-14 border-2 border-[#d6c3a5] border-t-black animate-spin" />
       </div>
     );
   }

@@ -149,7 +149,7 @@ export default function AboutUs() {
               owner?.storyImage ||
               "https://t4.ftcdn.net/jpg/05/36/09/73/360_F_536097363_JgtB1decJ8ahW5u35bDzHwWkQuDe7RVd.jpg"
             }
-            alt="Our Story"
+            alt=" a  man crafting jewelery in a workshop"
             initial={{ clipPath: "inset(0 100% 0 0)" }}
             whileInView={{ clipPath: "inset(0 0% 0 0)" }}
             transition={{ duration: 1.1, ease: "easeInOut" }}
@@ -166,7 +166,7 @@ export default function AboutUs() {
             owner?.aboutLeftImage ||
             "https://images.unsplash.com/photo-1617038220319-276d3cfab638"
           }
-          alt="About Left"
+          alt="a woman with jewelry "
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
@@ -192,7 +192,7 @@ export default function AboutUs() {
             owner?.aboutrightImage ||
             "https://images.unsplash.com/photo-1611652022419-a9419f74343d"
           }
-          alt="About Right"
+          alt="a model with jewelry"
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
@@ -463,9 +463,12 @@ export default function AboutUs() {
                   ease: [0.25, 0.1, 0.25, 1],
                 }}
                 whileHover={{ y: -8 }}
-                onClick={() =>
-                  navigate(`/collections/${item.category}/${item._id}`)
-                }
+                onClick={() => {
+                  const slug = `${item.name.toLowerCase().replace(/\s+/g, "-")}-${item._id}`;
+                  navigate(
+                    `/collections/${item.category.toLowerCase()}/${slug}`,
+                  );
+                }}
                 className="group text-center cursor-pointer"
               >
                 <div className="relative bg-white flex items-center justify-center h-[200px] sm:h-[240px] md:h-[350px] lg:h-[380px] overflow-hidden">

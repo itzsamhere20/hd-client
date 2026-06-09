@@ -190,44 +190,78 @@ export default function CollectionCategory() {
             </motion.h2>
           </motion.div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 md:gap-x-8 gap-y-12 lg:gap-24">
-            {filteredProducts.map((product) => {
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-5 md:gap-x-8 gap-y-12 md:gap-y-16 lg:gap-32">
+            {filteredProducts.map((product, i) => {
+              const oldPrice = Number(product.price);
+              const discount = Number(product.discount || 0);
               const finalPrice =
-                Number(product.price) -
-                Math.floor(
-                  (Number(product.price) * Number(product.discount || 0)) / 100,
-                );
+                oldPrice - Math.floor((oldPrice * discount) / 100);
+              const soldOut = (product.stock || 0) === 0;
+              const limitedStock = product.stock > 0 && product.stock < 3;
 
               return (
                 <motion.div
                   key={product._id}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
+                  variants={{
+                    hidden: { opacity: 0, y: 50 },
+                    show: {
+                      opacity: 1,
+                      y: 0,
+                      transition: { duration: 0.8, ease: [0.25, 0.1, 0.25, 1] },
+                    },
+                  }}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, margin: "-100px" }}
                   whileHover={{ y: -8 }}
-                  onClick={() =>
+                  onClick={() => {
+                    const slug = `${product.name.toLowerCase().replace(/\s+/g, "-")}-${product._id}`;
                     navigate(
-                      `/collections/${product.category.toLowerCase()}/${product._id}`,
-                    )
-                  }
+                      `/collections/${product.category.toLowerCase()}/${slug}`,
+                    );
+                  }}
                   className="group text-center cursor-pointer"
                 >
-                  <div className="relative bg-white h-[220px] md:h-[420px] overflow-hidden">
+                  <div className="relative bg-white flex items-center justify-center h-[200px] sm:h-[240px] md:h-[350px] lg:h-[450px] overflow-hidden">
+                    {soldOut && (
+                      <div className="absolute inset-0 z-30 bg-gray-500/40" />
+                    )}
+
+                    {soldOut && (
+                      <div className="absolute top-4 left-4 z-40 bg-black text-white text-[8px] md:text-[10px] tracking-[0.2em] px-3 py-2 uppercase">
+                        Sold Out
+                      </div>
+                    )}
+
+                    {limitedStock && !soldOut && (
+                      <div className="absolute top-4 left-4 z-20 bg-[#c89b63] text-white text-[8px] md:text-[10px] tracking-[0.2em] px-3 py-2 uppercase">
+                        Limited Stock
+                      </div>
+                    )}
+
                     <img
                       src={product.image}
                       alt={product.name}
-                      className="w-full h-full object-contain transition duration-700 group-hover:scale-105"
+                      className="h-[100%] object-contain transition duration-700 group-hover:scale-105"
                     />
                   </div>
 
-                  <div className="mt-5">
-                    <h3 className="font-cormorant uppercase tracking-[0.18em] text-black">
+                  <div className="mt-4 md:mt-5">
+                    <h3 className="font-cormorant text-xs md:text-lg uppercase tracking-[0.18em] text-black leading-tight">
                       {product.name}
                     </h3>
 
-                    <p className="text-primary tracking-[0.45em] text-[11px] uppercase mt-2">
-                      PKR {finalPrice.toLocaleString()}
-                    </p>
+                    <div className="mt-1 md:mt-3 flex flex-col items-center gap-1">
+                      {discount > 0 && (
+                        <p className="text-[9px] md:text-[10px] tracking-[0.25em] md:tracking-[0.4em] uppercase text-neutral-400 line-through">
+                          PKR {oldPrice.toLocaleString()}
+                        </p>
+                      )}
+
+                      <p className="text-[10px] md:text-[11px] text-primary tracking-[0.3em] md:tracking-[0.55em] uppercase">
+                        PKR {finalPrice.toLocaleString()}
+                      </p>
+                    </div>
                   </div>
                 </motion.div>
               );

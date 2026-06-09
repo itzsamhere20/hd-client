@@ -76,7 +76,7 @@ const Hero = () => {
   }
 
   return (
-    <section className="relative min-h-[1000px] flex items-center justify-center overflow-hidden pt-24 ">
+    <section className="relative min-h-screen  md:min-h-[1000px] flex items-center justify-center overflow-hidden pt-24 ">
       {/* ✨ Living Luxury Light */}
       <motion.div
         className="pointer-events-none absolute top-[-10%] left-1/2 -translate-x-1/2 w-[900px] h-[500px] rounded-full blur-3xl opacity-40"

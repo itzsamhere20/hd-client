@@ -58,7 +58,7 @@ function App() {
             }
           />
           <Route
-            path="/collections/:category/:id"
+            path="/collections/:category/:productSlug"
             element={
               <PageTransition>
                 <ProductDetail />

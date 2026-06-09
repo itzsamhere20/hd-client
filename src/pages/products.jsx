@@ -452,9 +452,9 @@ const Products = () => {
                       viewport={{ once: true, margin: "-100px" }}
                       whileHover={{ y: -8 }}
                       onClick={() => {
-                        console.log("PRODUCT CLICKED");
+                        const slug = `${item.name.toLowerCase().replace(/\s+/g, "-")}-${item.id}`;
                         navigate(
-                          `/collections/${item.category.toLowerCase()}/${item.id}`,
+                          `/collections/${item.category.toLowerCase()}/${slug}`,
                         );
                       }}
                       className="group text-center cursor-pointer"
