@@ -111,12 +111,19 @@ export default function FAQPage() {
 
       {/* NAV */}
       {!loading && sections.length > 0 && (
-        <div className="flex justify-center gap-5 md:gap-10 text-xs md:text-sm uppercase tracking-[0.3em] mb-24">
+        <div className="flex flex-wrap justify-center gap-3 md:gap-6 mb-20 px-4">
           {sections.map((s) => (
             <a
               key={s._id}
               href={`#${s.id || s._id}`}
-              className="hover:text-primary transition-colors"
+              className="
+        px-4 py-2
+        text-[10px] md:text-xs
+        uppercase
+        tracking-[0.2em]
+       hover:text-primary
+       
+      "
             >
               {s.title}
             </a>
@@ -126,7 +133,7 @@ export default function FAQPage() {
 
       {/* SECTIONS */}
       {!loading && (
-        <div className="max-w-5xl mx-auto px-6 pb-28 space-y-28">
+        <div className="max-w-5xl mx-auto px-6 pb-28 space-y-20 md:space-y-28">
           {filteredSections.length === 0 && search && (
             <p className="text-center font-cormorant text-2xl text-gray-400">
               No results for "{search}"
@@ -134,10 +141,10 @@ export default function FAQPage() {
           )}
           {filteredSections.map((section) => (
             <div key={section._id} id={section.id || section._id}>
-              <h2 className="font-luxury text-3xl md:text-5xl mb-12 tracking-wide">
+              <h2 className="font-luxury text-2xl md:text-5xl mb-10 md:mb-12 tracking-wide">
                 {section.title}
               </h2>
-              <div className="space-y-8">
+              <div className="space-y-4 md:space-y-8">
                 {section.items.map((item, i) => {
                   const key = `${section._id}-${i}`;
                   return (
@@ -149,7 +156,7 @@ export default function FAQPage() {
                         onClick={() => toggle(key)}
                         className="w-full flex justify-between items-center text-left group"
                       >
-                        <h3 className="font-luxury text-xl md:text-2xl group-hover:text-primary transition">
+                        <h3 className="font-luxury text-base md:text-2xl group-hover:text-primary transition">
                           {item.question}
                         </h3>
                         <span className="text-2xl text-primary">
@@ -163,7 +170,7 @@ export default function FAQPage() {
                             : "max-h-0 opacity-0"
                         }`}
                       >
-                        <p className="font-cormorant text-lg md:text-xl text-gray-700 leading-[1.8]">
+                        <p className="font-cormorant text-sm md:text-xl text-gray-700 leading-[1.8]">
                           {item.answer}
                         </p>
                       </div>

@@ -86,7 +86,9 @@ export default function Checkout() {
     return source.map((p) => ({
       ...p,
       price: Number(p.price || 0),
+      finalPrice: Number(p.finalPrice || p.price || 0), // ← add this
       quantity: Number(p.quantity || p.qty || 1),
+      price: p.finalPrice || p.price,
     }));
   });
 
@@ -94,7 +96,10 @@ export default function Checkout() {
   /* =========================================================
      TOTAL
   ========================================================= */
-  const subtotal = products.reduce((acc, p) => acc + p.price * p.quantity, 0);
+  const subtotal = products.reduce(
+    (acc, p) => acc + (p.finalPrice || p.price) * p.quantity,
+    0,
+  );
 
   const formatPrice = (price) => Number(price || 0).toLocaleString("en-PK");
 

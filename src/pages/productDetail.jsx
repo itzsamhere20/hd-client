@@ -453,7 +453,7 @@ const ProductDetail = () => {
           <h2 className="font-luxury tracking-wider text-3xl md:text-4xl lg:text-5xl mb-6">
             Description
           </h2>
-          <p className="font-cormorant text-sm md:text-xl text-gray-700 tracking-wide leading-[1.8] lg:leading-[2]">
+          <p className=" text-[14px] md:text-xl text-gray-600 tracking-widest leading-[2.1] lg:leading-[2]">
             {product.description}
           </p>
         </motion.div>

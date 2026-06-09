@@ -1,7 +1,7 @@
 import { Search, X, SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import api from "../components/api";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 const Products = () => {
@@ -556,78 +556,92 @@ const Products = () => {
       )}
 
       {/* ================= MOBILE FILTER SHEET ================= */}
-      {filterOpen && (
-        <div className="fixed inset-0 z-[200]">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setFilterOpen(false)}
-          />
+      <AnimatePresence>
+        {filterOpen && (
+          <div className="fixed inset-0 z-[200]">
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="absolute inset-0 bg-black/40"
+              onClick={() => setFilterOpen(false)}
+            />
 
-          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-5">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xs tracking-[0.3em] uppercase text-gray-500">
-                Filters
-              </h3>
+            {/* Bottom Sheet */}
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{
+                duration: 0.4,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-5"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xs tracking-[0.3em] uppercase text-gray-500">
+                  Filters
+                </h3>
 
-              <button onClick={() => setFilterOpen(false)}>
-                <X size={18} />
-              </button>
-            </div>
+                <button onClick={() => setFilterOpen(false)}>
+                  <X size={18} />
+                </button>
+              </div>
 
-            <div className="mb-6">
-              <p className="text-xs tracking-[0.2em] text-gray-400 mb-3">
-                Category
-              </p>
+              <div className="mb-6">
+                <p className="text-xs tracking-[0.2em] text-gray-400 mb-3">
+                  Category
+                </p>
 
-              <div className="flex flex-wrap gap-2">
-                {filterButtons.map((item) => (
-                  <button
-                    key={item}
-                    onClick={() => setActiveCategory(item)}
-                    className={`
-                      px-4 py-2 text-xs border
-                      ${
+                <div className="flex flex-wrap gap-2">
+                  {filterButtons.map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => setActiveCategory(item)}
+                      className={`px-4 py-2 text-xs border ${
                         activeCategory === item
                           ? "bg-primary text-white border-primary"
                           : "border-[#ddd2c2]"
-                      }
-                    `}
-                  >
-                    {item}
-                  </button>
-                ))}
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div>
-              <p className="text-xs tracking-[0.2em] text-gray-400 mb-3">
-                Sort
-              </p>
+              <div>
+                <p className="text-xs tracking-[0.2em] text-gray-400 mb-3">
+                  Sort
+                </p>
 
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="w-full h-[44px] border border-[#ddd2c2] px-4 text-sm"
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full h-[44px] border border-[#ddd2c2] px-4 text-sm"
+                >
+                  <option value="default">Default</option>
+                  <option value="men">Men</option>
+                  <option value="women">Women</option>
+                  <option value="artificial">Artificial</option>
+                  <option value="silver">Silver</option>
+                  <option value="highest">Highest Price</option>
+                  <option value="lowest">Lowest Price</option>
+                </select>
+              </div>
+
+              <button
+                onClick={() => setFilterOpen(false)}
+                className="w-full mt-6 bg-primary text-white py-4 text-xs tracking-[0.2em] uppercase"
               >
-                <option value="default">Default</option>
-                <option value="men">Men</option>
-                <option value="women">Women</option>
-                <option value="artificial">Artificial</option>
-                <option value="silver">Silver</option>
-                <option value="highest">Highest Price</option>
-                <option value="lowest">Lowest Price</option>
-              </select>
-            </div>
-
-            <button
-              onClick={() => setFilterOpen(false)}
-              className="w-full mt-6 bg-primary text-white py-3 text-xs tracking-[0.2em] uppercase"
-            >
-              Apply Filters
-            </button>
+                Apply Filters
+              </button>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </section>
   );
 };

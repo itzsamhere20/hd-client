@@ -108,7 +108,10 @@ const CartDrawer = ({ open, setOpen }) => {
   };
 
   // ---------------- TOTAL ----------------
-  const total = cartItems.reduce((acc, item) => acc + item.price * item.qty, 0);
+  const total = cartItems.reduce(
+    (acc, item) => acc + (item.finalPrice || item.price) * item.qty,
+    0,
+  );
 
   return (
     <AnimatePresence>

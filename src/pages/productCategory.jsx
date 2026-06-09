@@ -77,8 +77,6 @@ export default function CollectionCategory() {
     if (!cachedProducts) setProducts([]);
     if (!cachedCategory) setCategoryData(null);
 
-    setLoading(false);
-
     // 2️⃣ background refresh
     fetchFromAPI();
   }, [category]);
@@ -91,8 +89,8 @@ export default function CollectionCategory() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center">
-        <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#f8f5f0]">
+        <div className="w-14 h-14 border-2 border-[#d6c3a5] border-t-black animate-spin" />
       </div>
     );
   }
