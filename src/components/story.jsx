@@ -71,6 +71,7 @@ export default function Story() {
       <div className="relative flex justify-center items-center  py-10 ">
         {/* ===== SINGLE INTERACTIVE BOX ===== */}
         <div
+          aria-label="go to about page"
           className="relative inline-flex justify-center over items-center cursor-pointer "
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}

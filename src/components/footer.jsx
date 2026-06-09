@@ -254,6 +254,8 @@ const Footer = () => {
             },
           ].map(({ Icon, href }, i) => (
             <a
+              title={"visit " + href}
+              aria-label={"Go to " + href}
               key={i}
               href={href}
               target="_blank"

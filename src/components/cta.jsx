@@ -130,6 +130,8 @@ const CTASection = () => {
               {content.leftText}
             </p>
             <button
+              title="visit collections page"
+              aria-label="navigate button to collections page"
               onClick={() => navigate("/collections")}
               className="text-xs uppercase tracking-[0.35em] border-b border-gray-400 hover:border-primary hover:text-primary transition pb-1"
             >
@@ -157,6 +159,8 @@ const CTASection = () => {
               {content.rightText}
             </p>
             <button
+              title="go to collections page"
+              aria-label="navigate button to collections page"
               onClick={() => navigate("/collections")}
               className="text-xs uppercase tracking-[0.35em] border-b border-gray-400 hover:border-primary hover:text-primary transition pb-1"
             >

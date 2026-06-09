@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, transform } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import api from "./api";
 
@@ -157,7 +157,10 @@ const Featured = () => {
             <motion.div
               key={product._id}
               onClick={() => handleClick(product)}
-              className="group cursor-pointer"
+              className="group cursor-pointer "
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: index * 0.1 }}
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: index * 0.1 }}

@@ -167,6 +167,7 @@ const Hero = () => {
           </motion.p>
 
           <motion.button
+            tit
             whileTap={{ scale: 0.98 }}
             className="px-8 py-3 text-sm tracking-[0.3em] uppercase border border-[#C6A962] text-[#A68A3C] relative overflow-hidden group
             "

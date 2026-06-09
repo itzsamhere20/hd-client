@@ -2,19 +2,23 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <url>
-    <loc>https://hamdamcollection.com/</loc>
+    <loc>https://hamdamcollections.com/</loc>
   </url>
 
   <url>
-    <loc>https://hamdamcollection.com/collections</loc>
+    <loc>https://hamdamcollections.com/collections</loc>
   </url>
 
   <url>
-    <loc>https://hamdamcollection.com/about</loc>
+    <loc>https://hamdamcollections.com/about</loc>
   </url>
 
   <url>
-    <loc>https://hamdamcollection.com/contact</loc>
+    <loc>https://hamdamcollections.com/contact</loc>
+  </url>
+
+  <url>
+    <loc>https://hamdamcollections.com/faq</loc>
   </url>
 
 </urlset>

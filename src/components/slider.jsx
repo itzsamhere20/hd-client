@@ -188,6 +188,8 @@ const Slider = () => {
                 {slides.map((_, i) => (
                   <div
                     key={i}
+                    title="change slide"
+                    aria-label="butotn to switch slides"
                     onClick={() => swiperRef?.slideToLoop(i)}
                     className={`
                       w-3 h-3 rotate-45 cursor-pointer transition-all duration-300
