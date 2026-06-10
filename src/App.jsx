@@ -2,7 +2,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import Navbar from "./components/navbar";
 import Footer from "./components/footer";
-import PageTransition from "./components/PageTransition";
+import PageTransition from "./components/pageTransition";
 import ScrollToTop from "./components/scrollToTop";
 // pages...
 import Home from "./pages/home";
