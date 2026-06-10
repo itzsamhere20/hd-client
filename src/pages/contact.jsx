@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../components/api";
 import { AnimatePresence, motion } from "framer-motion";
-
+import { Helmet } from "react-helmet-async";
 const fallbackContact = {
   email: "hamdamcollections@gmail.com",
   phone: "+92 332 4384033",
@@ -260,6 +260,24 @@ export default function ContactPage() {
 
   return (
     <section className="text-gray-900 overflow-hidden">
+      {/* ---------- helmet----------------- */}
+      <Helmet>
+        <title>Contact | Hamdam Jewellers</title>
+        <meta
+          name="description"
+          content="Contact Hamdam Jewellers for questions about our jewellery collections, custom designs, orders, and customer support. We'd love to hear from you."
+        />
+        <meta property="og:title" content="Collections | Hamdam Jewellers" />
+        <meta
+          property="og:description"
+          content="Contact Hamdam Jewellers for jewellery inquiries, custom designs, order support, and customer service across Pakistan."
+        />
+        <meta
+          property="og:url"
+          content="https://hamdamcollections.com/contact"
+        />
+        <link rel="canonical" href="https://hamdamcollections.com/contact" />
+      </Helmet>
       {/* ===== HERO ===== */}
       <div className="relative flex items-center justify-center py-28 md:py-40">
         <h1 className="absolute text-[70px] md:text-[160px] lg:text-[220px] font-luxury text-primary/10 select-none">

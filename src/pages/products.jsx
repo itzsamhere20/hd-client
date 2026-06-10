@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import api from "../components/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 const Products = () => {
   const navigate = useNavigate();
@@ -184,6 +185,54 @@ const Products = () => {
 
   return (
     <section className="overflow-hidden pb-0">
+      {/* ---------- helmet----------------- */}
+      <Helmet>
+        <title>Collections | Hamdam Jewellers</title>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            itemListElement: Object.values(products)
+              .flat()
+              .slice(0, 10)
+              .map((p, index) => ({
+                "@type": "ListItem",
+                position: index + 1,
+                name: p.name,
+                url: `https://hamdamcollections.com/collections/${p.category.toLowerCase()}/${p.name
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")}-${p.id}`,
+                image: p.img,
+                offers: {
+                  "@type": "Offer",
+                  price: p.price,
+                  priceCurrency: "PKR",
+                  availability:
+                    p.stock > 0
+                      ? "https://schema.org/InStock"
+                      : "https://schema.org/OutOfStock",
+                },
+              })),
+          })}
+        </script>
+        <meta
+          name="description"
+          content="Browse all jewellery collections at Hamdam — rings, necklaces, bracelets and more. Handmade with premium quality in Pakistan."
+        />
+        <meta property="og:title" content="Collections | Hamdam Jewellers" />
+        <meta
+          property="og:description"
+          content="Browse all jewellery collections at Hamdam Jewellers."
+        />
+        <meta
+          property="og:url"
+          content="https://hamdamcollections.com/collections"
+        />
+        <link
+          rel="canonical"
+          href="https://hamdamcollections.com/collections"
+        />
+      </Helmet>
       {/* ================= FILTER BAR ================= */}
       <div className="sticky top-20 z-[10]">
         <div className="max-w-7xl mx-auto px-4 py-20">

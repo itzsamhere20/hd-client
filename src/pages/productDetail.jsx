@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import api from "../components/api";
-
+import { Helmet } from "react-helmet-async";
 const ProductDetail = () => {
   const { productSlug } = useParams();
   const id = productSlug.split("-").pop();
@@ -186,12 +186,91 @@ const ProductDetail = () => {
 
   return (
     <section className="min-h-screen overflow-hidden pb-24 pt-32 md:pt-44 ">
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: product.name,
+            image: product.image,
+            description: product.description,
+            brand: {
+              "@type": "Brand",
+              name: "Hamdam Jewellers",
+            },
+            offers: {
+              "@type": "Offer",
+              url: window.location.href,
+              priceCurrency: "PKR",
+              price: finalPrice,
+              availability:
+                product.stock > 0
+                  ? "https://schema.org/InStock"
+                  : "https://schema.org/OutOfStock",
+            },
+          })}
+        </script>
+        <title>
+          {product?.name ? `${product.name} | Hamdam Jewellers` : "Loading..."}
+        </title>
+
+        <meta
+          name="description"
+          content={
+            product?.name
+              ? `Buy ${product.name} at Hamdam Jewellers. ${
+                  product.description ||
+                  "Handmade luxury jewellery crafted with premium quality in Pakistan."
+                }`
+              : "Loading product..."
+          }
+        />
+
+        <meta
+          property="og:title"
+          content={product?.name ? `${product.name} | Hamdam Jewellers` : ""}
+        />
+        <meta
+          property="og:description"
+          content={
+            product?.price ? `${product.name} — PKR ${product.price}` : ""
+          }
+        />
+        <meta property="og:image" content={product?.image || ""} />
+        <meta
+          property="og:url"
+          content={
+            product
+              ? `https://hamdamcollections.com/collections/${product.category?.toLowerCase()}/${product.name
+                  ?.toLowerCase()
+                  .replace(/\s+/g, "-")}-${product._id}`
+              : ""
+          }
+        />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          name="twitter:title"
+          content={product?.name ? `${product.name} | Hamdam Jewellers` : ""}
+        />
+        <meta
+          name="twitter:description"
+          content={
+            product?.description
+              ? product.description.length > 160
+                ? product.description.slice(0, 157) + "..."
+                : product.description
+              : "Luxury handmade jewellery"
+          }
+        />
+        <meta name="twitter:image" content={product?.image || ""} />
+      </Helmet>
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         {/* BACK */}
         <motion.button
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           onClick={() => navigate(-1)}
+          title="Go Back"
           className="flex items-center gap-3 text-xs uppercase tracking-[0.25em] text-gray-400 hover:text-black transition mb-12"
         >
           <ArrowLeft size={15} strokeWidth={1.5} />
@@ -251,9 +330,15 @@ const ProductDetail = () => {
             className="lg:pt-4"
           >
             {/* CATEGORY */}
-            <p className="text-[10px] uppercase tracking-[0.45em] text-primary/70 mb-4">
+            <button
+              title="Browse Category"
+              className="text-[10px] uppercase tracking-[0.45em] text-primary/70 border-b border-transparent  mb-4 hover:text-primary  hover:border-primary/60"
+              onClick={() =>
+                navigate(`/collections/${product.category.toLowerCase()}`)
+              }
+            >
               {product.category}
-            </p>
+            </button>
 
             {/* NAME */}
             <h1 className="font-cormorant uppercase tracking-[0.18em] text-black leading-tight text-3xl sm:text-4xl md:text-5xl">
@@ -455,7 +540,7 @@ const ProductDetail = () => {
           <h2 className="font-luxury tracking-wider text-3xl md:text-4xl lg:text-5xl mb-6">
             Description
           </h2>
-          <p className=" text-[14px] md:text-xl text-gray-600 tracking-widest leading-[2.1] lg:leading-[2]">
+          <p className=" text-[13px] md:text-lg text-gray-500 tracking-[0.05em] leading-[2.1] lg:leading-[2]">
             {product.description}
           </p>
         </motion.div>

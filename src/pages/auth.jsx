@@ -13,7 +13,7 @@ import {
   ArrowLeft,
   Mail,
 } from "lucide-react";
-
+import { Helmet } from "react-helmet-async";
 /* ── shared input style matching productDetail ── */
 const INPUT =
   "w-full h-14 px-5 border border-[#ddd2c2] outline-none bg-white text-sm placeholder:text-neutral-400 focus:border-black transition-colors";
@@ -293,6 +293,16 @@ export default function Auth() {
   if (user && profileCompleted && step !== "profile") {
     return (
       <>
+        {/* -------helemt--- */}
+        <Helmet>
+          <title>Login | Hamdam Jewellers</title>
+          <meta
+            name="description"
+            content="Sign in to your Hamdam Jewellers account."
+          />
+          <meta name="robots" content="noindex" />
+        </Helmet>
+
         <LogoutOverlay />
         <div className="min-h-screen bg-[#f8f5f0] pb-24 pt-32 md:pt-40 px-4">
           <div className="max-w-7xl mx-auto">
@@ -439,6 +449,16 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-[#f8f5f0] pb-24 pt-32 md:pt-40 px-4">
+      {/* -------helemt--- */}
+      <Helmet>
+        <title>Login | Hamdam Jewellers</title>
+        <meta
+          name="description"
+          content="Sign in to your Hamdam Jewellers account."
+        />
+        <meta name="robots" content="noindex" />
+      </Helmet>
+
       <div className="max-w-7xl mx-auto">
         {/* BACK */}
         <motion.button
@@ -653,6 +673,15 @@ export default function Auth() {
                   transition={{ duration: 0.3 }}
                   className="space-y-4"
                 >
+                  {/* -------helemt--- */}
+                  <Helmet>
+                    <title>Login | Hamdam Jewellers</title>
+                    <meta
+                      name="description"
+                      content="Sign in to your Hamdam Jewellers account."
+                    />
+                    <meta name="robots" content="noindex" />
+                  </Helmet>
                   {/* locked email */}
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.25em] text-gray-400 mb-3">
@@ -811,13 +840,14 @@ export default function Auth() {
                         }}
                         className="w-14 h-14 border border-[#ddd2c2] flex items-center justify-center hover:border-black transition"
                       >
-                        <X size={18} />
+                        <X title="Close" aria-label="cancel" size={18} />
                       </button>
                     )}
                   </div>
 
                   {!editingProfile && (
                     <button
+                      title="skip profile"
                       onClick={() => window.history.back()}
                       className="w-full text-xs text-gray-400 hover:text-black tracking-[0.2em] uppercase transition pt-1"
                     >

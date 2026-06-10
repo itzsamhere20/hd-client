@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../components/api";
-
+import { Helmet } from "react-helmet-async";
 export default function FAQPage() {
   const [open, setOpen] = useState(null);
   const [search, setSearch] = useState("");
@@ -75,6 +75,21 @@ export default function FAQPage() {
 
   return (
     <section className="text-gray-900 overflow-hidden">
+      {/* ---------- helmet----------------- */}
+      <Helmet>
+        <title>FAQ | Hamdam Jewellers</title>
+        <meta
+          name="description"
+          content="Explore our FAQs to learn about ordering, shipping, returns, payments, and caring for your Hamdam jewellery."
+        />
+        <meta property="og:title" content="Collections | Hamdam Jewellers" />
+        <meta
+          property="og:description"
+          content="Find helpful information about Hamdam Jewellers and enjoy a seamless shopping experience with answers to our most common customer questions."
+        />
+        <meta property="og:url" content="https://hamdamcollections.com/faq" />
+        <link rel="canonical" href="https://hamdamcollections.com/faq" />
+      </Helmet>
       {/* HERO */}
       <div className="relative flex items-center justify-center py-28 md:py-44">
         <h1 className="absolute text-[60px] md:text-[150px] lg:text-[210px] font-luxury text-primary/10 select-none tracking-[0.2em]">

@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import api from "../components/api";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 export default function AboutUs() {
   const navigate = useNavigate();
@@ -135,6 +136,21 @@ export default function AboutUs() {
 
   return (
     <section className="text-gray-900 overflow-hidden  relative">
+      {/* ----helmet---------------- */}
+      <Helmet>
+        <title>Our Story | Hamdam Jewellers</title>
+        <meta
+          name="description"
+          content="Read the story of Hamdam Jewellers, a Pakistan-based jewellery brand dedicated to handcrafted rings, necklaces, bracelets, and timeless designs."
+        />
+        <meta property="og:title" content="Our Story | Hamdam Jewellers" />
+        <meta
+          property="og:description"
+          content="Learn how Hamdam Jewellers began and the values that inspire every handcrafted piece we create for our customers."
+        />
+        <meta property="og:url" content="https://hamdamcollections.com/about" />
+        <link rel="canonical" href="https://hamdamcollections.com/about" />
+      </Helmet>
       {/* ================= HERO ================= */}
       <div className="relative max-w-7xl mx-auto px-6 pt-20 pb-12 md:pb-20  lg:pb-28 ">
         {/* HEADING — centred on mobile, left on md+ */}

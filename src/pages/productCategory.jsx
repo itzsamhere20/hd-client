@@ -3,9 +3,13 @@ import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../components/api";
-
+import { Helmet } from "react-helmet-async";
 export default function CollectionCategory() {
   const navigate = useNavigate();
+
+  // ------capital helmet---------
+  const capitalize = (str) =>
+    str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : "";
   const { category } = useParams();
 
   const [products, setProducts] = useState([]);
@@ -97,6 +101,63 @@ export default function CollectionCategory() {
 
   return (
     <section className="pb-24 overflow-hidden">
+      {/* {---------------- helmet--------------------} */}
+      <Helmet>
+        <title>
+          {category
+            ? `${capitalize(category)} | Hamdam Jewellers`
+            : "Loading..."}
+        </title>
+
+        <meta
+          name="description"
+          content={
+            category
+              ? `Shop ${capitalize(category)} at Hamdam Jewellers. Handmade luxury jewellery crafted with premium quality in Pakistan.`
+              : "Explore premium jewellery collections at Hamdam Jewellers."
+          }
+        />
+
+        {/* OG TAGS */}
+        <meta
+          property="og:title"
+          content={`${capitalize(category)} | Hamdam Jewellers`}
+        />
+        <meta
+          property="og:description"
+          content={`Explore our ${capitalize(category)} collection.`}
+        />
+        <meta
+          property="og:url"
+          content={`https://hamdamcollections.com/collections/${category}`}
+        />
+
+        {/* IMAGE (safe fallback) */}
+        <meta
+          property="og:image"
+          content={
+            categoryData?.image ||
+            "https://hamdamcollections.com/default-og.jpg"
+          }
+        />
+
+        <meta property="og:type" content="website" />
+
+        {/* TWITTER CARDS (IMPORTANT ADDITION) */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${category} | Hamdam Jewellers`} />
+        <meta
+          name="twitter:description"
+          content={`Explore our ${category} collection.`}
+        />
+        <meta
+          name="twitter:image"
+          content={
+            categoryData?.image ||
+            "https://hamdamcollections.com/default-og.jpg"
+          }
+        />
+      </Helmet>
       {/* ================= LUXURY HERO ================= */}
       <div className="relative py-28 md:py-36 flex flex-col items-center justify-center text-center">
         {/* MAIN TITLE */}

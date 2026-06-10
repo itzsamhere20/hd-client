@@ -4,7 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 .stroke-text {
-  -webkit-text-stroke: 1px #a68a3c81;
+  -webkit-text-stroke: 1px #a68a3cd8;
   color: transparent;
 }
 @keyframes float {
@@ -21,4 +21,19 @@
 
 .animate-float {
   animation: float 8s ease-in-out infinite;
+}
+::selection {
+  background: #a68a3c8f; /* your theme gold */
+  color: #fff;
+}
+
+::-moz-selection {
+  background: #A68A3C;
+  color: #fff;
+}
+input[type="checkbox"] {
+  accent-color: #A68A3C;
+}
+input[type="radio"] {
+  accent-color: #A68A3C; /* your theme color */
 }

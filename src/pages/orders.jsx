@@ -16,6 +16,7 @@ import {
   ArrowLeft,
   AlertTriangle,
 } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 /* =========================
    ADMIN WHATSAPP NUMBER
@@ -254,6 +255,14 @@ export default function MyOrders() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8f5f0]">
+        <Helmet>
+          <title>My Orders | Hamdam Jewellers</title>
+          <meta
+            name="description"
+            content="Track and manage your Hamdam Jewellers orders."
+          />
+          <meta name="robots" content="noindex" />
+        </Helmet>
         <div className="w-14 h-14 border-2 border-[#d6c3a5] border-t-black animate-spin" />
       </div>
     );
@@ -261,6 +270,14 @@ export default function MyOrders() {
 
   return (
     <div className="min-h-screen pt-24 md:pt-36 pb-16">
+      <Helmet>
+        <title>My Orders | Hamdam Jewellers</title>
+        <meta
+          name="description"
+          content="Track and manage your Hamdam Jewellers orders."
+        />
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <div className="max-w-6xl mx-auto px-4">
         {/* HEADER */}
         {/* BACK + HEADER */}
