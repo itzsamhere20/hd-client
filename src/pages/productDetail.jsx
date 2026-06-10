@@ -24,6 +24,7 @@ const ProductDetail = () => {
         setLoading(true);
         const res = await api.get(`/products/${id}`);
         setProduct(res.data);
+
         if (Array.isArray(res.data.sizes) && res.data.sizes.length > 0) {
           setSelectedSize(res.data.sizes[0]);
         }
