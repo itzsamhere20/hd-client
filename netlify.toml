@@ -1,10 +1,14 @@
-[[edge_functions]]
-  path = "/collections/*"
-  function = "og-meta"
-
 [build]
   command = "npm run build"
   publish = "dist"
+
+[[edge_functions]]
+  path = "/collections"
+  function = "og-meta"
+
+[[edge_functions]]
+  path = "/collections/*"
+  function = "og-meta"
 
 [[redirects]]
   from = "/*"
