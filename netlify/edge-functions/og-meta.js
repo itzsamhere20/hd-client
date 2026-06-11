@@ -41,7 +41,7 @@ export default async (request, context) => {
 <meta property="og:description" content="${escape(description)}" />
 <meta property="og:image" content="${escape(image)}" />
 <meta property="og:url" content="${escape(request.url)}" />
-<meta property="og:site_name" content="Hamdam Jewellers" />
+<meta property="og:site_name" content="Hamdam Jewellery" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="${escape(title)}" />
 <meta name="twitter:description" content="${escape(description)}" />
@@ -59,7 +59,7 @@ ${extraBody}
     /* ───────── /collections (all products) ───────── */
     if (segments.length === 1 && segments[0] === "collections") {
       const html = renderHTML({
-        title: "Collections | Hamdam Jewellers",
+        title: "Collections | Hamdam Jewellery",
         description:
           "Browse all jewellery collections at Hamdam — rings, necklaces, bracelets and more. Handmade with premium quality in Pakistan.",
         image: DEFAULT_IMAGE,
@@ -81,8 +81,8 @@ ${extraBody}
       );
 
       const niceName = capitalize(categoryName);
-      const title = `${niceName} | Hamdam Jewellers`;
-      const description = `Explore our ${niceName} collection at Hamdam Jewellers — handmade luxury jewellery crafted with premium quality in Pakistan.`;
+      const title = `${niceName} | Hamdam Jewellery`;
+      const description = `Explore our ${niceName} collection at Hamdam Jewellery — handmade luxury jewellery crafted with premium quality in Pakistan.`;
       const image = categoryData?.image || DEFAULT_IMAGE;
 
       const html = renderHTML({ title, description, image });
@@ -114,7 +114,7 @@ ${extraBody}
           : product.description
         : "Luxury handmade jewellery crafted with premium quality in Pakistan.";
 
-      const title = `${product.name} | Hamdam Jewellers`;
+      const title = `${product.name} | Hamdam Jewellery`;
       const image = product.image || DEFAULT_IMAGE;
 
       const html = renderHTML({
