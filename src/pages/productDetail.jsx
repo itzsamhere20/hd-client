@@ -197,7 +197,7 @@ const ProductDetail = () => {
             description: product.description,
             brand: {
               "@type": "Brand",
-              name: "Hamdam Jewellers",
+              name: "Hamdam Jewellery",
             },
             offers: {
               "@type": "Offer",
@@ -212,14 +212,14 @@ const ProductDetail = () => {
           })}
         </script>
         <title>
-          {product?.name ? `${product.name} | Hamdam Jewellers` : "Loading..."}
+          {product?.name ? `${product.name} | Hamdam Jewellery` : "Loading..."}
         </title>
 
         <meta
           name="description"
           content={
             product?.name
-              ? `Buy ${product.name} at Hamdam Jewellers. ${
+              ? `Buy ${product.name} at Hamdam Jewellery. ${
                   product.description ||
                   "Handmade luxury jewellery crafted with premium quality in Pakistan."
                 }`
@@ -229,7 +229,7 @@ const ProductDetail = () => {
 
         <meta
           property="og:title"
-          content={product?.name ? `${product.name} | Hamdam Jewellers` : ""}
+          content={product?.name ? `${product.name} | Hamdam Jewellery` : ""}
         />
         <meta
           property="og:description"
@@ -251,7 +251,7 @@ const ProductDetail = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="twitter:title"
-          content={product?.name ? `${product.name} | Hamdam Jewellers` : ""}
+          content={product?.name ? `${product.name} | Hamdam Jewellery` : ""}
         />
         <meta
           name="twitter:description"

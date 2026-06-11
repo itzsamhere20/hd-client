@@ -187,7 +187,7 @@ const Products = () => {
     <section className="overflow-hidden pb-0">
       {/* ---------- helmet----------------- */}
       <Helmet>
-        <title>Collections | Hamdam Jewellers</title>
+        <title>Collections | Hamdam Jewellery</title>
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -219,10 +219,10 @@ const Products = () => {
           name="description"
           content="Browse all jewellery collections at Hamdam — rings, necklaces, bracelets and more. Handmade with premium quality in Pakistan."
         />
-        <meta property="og:title" content="Collections | Hamdam Jewellers" />
+        <meta property="og:title" content="Collections | Hamdam Jewellery" />
         <meta
           property="og:description"
-          content="Browse all jewellery collections at Hamdam Jewellers."
+          content="Browse all jewellery collections at Hamdam Jewellery."
         />
         <meta
           property="og:url"

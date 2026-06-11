@@ -105,7 +105,7 @@ export default function CollectionCategory() {
       <Helmet>
         <title>
           {category
-            ? `${capitalize(category)} | Hamdam Jewellers`
+            ? `${capitalize(category)} | Hamdam Jewellery`
             : "Loading..."}
         </title>
 
@@ -113,15 +113,15 @@ export default function CollectionCategory() {
           name="description"
           content={
             category
-              ? `Shop ${capitalize(category)} at Hamdam Jewellers. Handmade luxury jewellery crafted with premium quality in Pakistan.`
-              : "Explore premium jewellery collections at Hamdam Jewellers."
+              ? `Shop ${capitalize(category)} at Hamdam Jewellery. Handmade luxury jewellery crafted with premium quality in Pakistan.`
+              : "Explore premium jewellery collections at Hamdam Jewellery."
           }
         />
 
         {/* OG TAGS */}
         <meta
           property="og:title"
-          content={`${capitalize(category)} | Hamdam Jewellers`}
+          content={`${capitalize(category)} | Hamdam Jewellery`}
         />
         <meta
           property="og:description"
@@ -145,7 +145,7 @@ export default function CollectionCategory() {
 
         {/* TWITTER CARDS (IMPORTANT ADDITION) */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${category} | Hamdam Jewellers`} />
+        <meta name="twitter:title" content={`${category} | Hamdam Jewellery`} />
         <meta
           name="twitter:description"
           content={`Explore our ${category} collection.`}

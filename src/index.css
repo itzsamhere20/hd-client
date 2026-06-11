@@ -22,18 +22,18 @@
 .animate-float {
   animation: float 8s ease-in-out infinite;
 }
-::selection {
-  background: #a68a3c8f; /* your theme gold */
+*::selection {
+  background: rgba(166, 138, 60, 0.56);
   color: #fff;
 }
 
-::-moz-selection {
-  background: #A68A3C;
+*::-moz-selection {
+  background: rgba(166, 138, 60, 0.56);
   color: #fff;
 }
 input[type="checkbox"] {
   accent-color: #A68A3C;
 }
 input[type="radio"] {
-  accent-color: #A68A3C; /* your theme color */
+  accent-color: #A68A3C; 
 }
